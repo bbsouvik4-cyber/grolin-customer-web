@@ -126,6 +126,15 @@ export default function CheckoutPage() {
                 return
             }
 
+            if (paymentMethod === 'WALLET') {
+                const walletPayment = await walletService.pay(order.id)
+                if (!walletPayment) {
+                    setIsPlacing(false)
+                    toast.error('Wallet payment failed. Please try again.')
+                    return
+                }
+            }
+
             clearCoupon()
             router.push(`/checkout/success?orderId=${order.id}`)
         } catch {

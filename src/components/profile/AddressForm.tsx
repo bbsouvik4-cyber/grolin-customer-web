@@ -4,6 +4,7 @@ import { forwardRef, useEffect, useMemo, useRef, useState } from 'react'
 import type { InputHTMLAttributes } from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { GoogleMap, MarkerF, useLoadScript } from '@react-google-maps/api'
 import { CheckCircle2, ChevronDown, Loader2, MapPin, XCircle } from 'lucide-react'
 import { z } from 'zod'
 import { toast } from 'sonner'
@@ -26,10 +27,20 @@ type AddressFormInput = z.input<typeof addressSchema>
 type AddressFormData = z.output<typeof addressSchema>
 type PincodeStatus = 'idle' | 'checking' | 'valid' | 'invalid' | 'unavailable'
 type Coordinates = { lat?: number; lng?: number }
+type ReverseGeocodeResult = {
+  addressLine1: string
+  addressLine2?: string
+  city: string
+  state?: string
+  pincode?: string
+}
 type IndiaPostLookupResult =
   | { status: 'resolved'; city: string; state: string }
   | { status: 'invalid' }
   | { status: 'error' }
+
+const GOOGLE_MAP_LIBRARIES: ('places')[] = ['places']
+const DEFAULT_MAP_CENTER = { lat: 22.5726, lng: 88.3639 }
 
 export function AddressForm({
   defaultValues,
@@ -47,6 +58,12 @@ export function AddressForm({
     lng: defaultValues?.lng,
   })
   const stateMenuRef = useRef<HTMLDivElement | null>(null)
+  const googleMapsKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_KEY
+  const hasGoogleMapsKey = Boolean(googleMapsKey?.trim())
+  const { isLoaded: mapLoaded, loadError: mapLoadError } = useLoadScript({
+    googleMapsApiKey: googleMapsKey ?? '',
+    libraries: GOOGLE_MAP_LIBRARIES,
+  })
 
   const initialValues = useMemo<AddressFormInput>(
     () => ({
@@ -77,6 +94,13 @@ export function AddressForm({
 
   const pincode = watch('pincode')
   const selectedState = watch('state')
+  const mapCenter = useMemo(
+    () => ({
+      lat: coordinates.lat ?? defaultValues?.lat ?? DEFAULT_MAP_CENTER.lat,
+      lng: coordinates.lng ?? defaultValues?.lng ?? DEFAULT_MAP_CENTER.lng,
+    }),
+    [coordinates.lat, coordinates.lng, defaultValues?.lat, defaultValues?.lng],
+  )
 
   useEffect(() => {
     reset(initialValues)
@@ -174,6 +198,54 @@ export function AddressForm({
     }
   }, [pincode, setValue])
 
+  const applyReverseGeocode = async (
+    nextCoordinates: { lat: number; lng: number },
+    successMessage: string,
+  ) => {
+    setCoordinates(nextCoordinates)
+
+    if (!googleMapsKey) {
+      toast.info('Location saved. Complete the address manually if needed.')
+      return
+    }
+
+    try {
+      const geocoded = await reverseGeocodeCoordinates(
+        nextCoordinates.lat,
+        nextCoordinates.lng,
+        googleMapsKey,
+      )
+
+      if (!geocoded) {
+        toast.info('Location pinned. Complete the address manually if needed.')
+        return
+      }
+
+      setValue('addressLine1', geocoded.addressLine1, {
+        shouldValidate: true,
+        shouldDirty: true,
+      })
+      setValue('addressLine2', geocoded.addressLine2 ?? '', {
+        shouldValidate: false,
+        shouldDirty: true,
+      })
+      setValue('city', geocoded.city, { shouldValidate: true, shouldDirty: true })
+
+      const normalizedState = normalizeStateName(geocoded.state ?? '')
+      if (normalizedState) {
+        setValue('state', normalizedState, { shouldValidate: true, shouldDirty: true })
+      }
+
+      if (geocoded.pincode) {
+        setValue('pincode', geocoded.pincode, { shouldValidate: true, shouldDirty: true })
+      }
+
+      toast.success(successMessage)
+    } catch {
+      toast.info('Location pinned. Complete the address manually if needed.')
+    }
+  }
+
   const handleUseLocation = () => {
     if (!navigator.geolocation) {
       toast.error('Geolocation is not supported on this device.')
@@ -189,72 +261,11 @@ export function AddressForm({
           lng: position.coords.longitude,
         }
 
-        setCoordinates(nextCoordinates)
-
-        const key = process.env.NEXT_PUBLIC_GOOGLE_MAPS_KEY
-        if (!key) {
-          setLocating(false)
-          toast.info('Location captured. Complete the address manually.')
-          return
-        }
-
         try {
-          const response = await fetch(
-            `https://maps.googleapis.com/maps/api/geocode/json?latlng=${nextCoordinates.lat},${nextCoordinates.lng}&key=${key}`,
+          await applyReverseGeocode(
+            nextCoordinates,
+            'Location detected. Review the address before saving.',
           )
-          const data = (await response.json()) as {
-            status?: string
-            results?: Array<{
-              formatted_address?: string
-              address_components?: Array<{ long_name: string; types: string[] }>
-            }>
-          }
-
-          if (data.status !== 'OK' || !data.results?.length) {
-            toast.info('Location captured. Complete the address manually.')
-            return
-          }
-
-          const primaryResult = data.results[0]
-          if (!primaryResult) {
-            toast.info('Location captured. Complete the address manually.')
-            return
-          }
-
-          const components = primaryResult.address_components ?? []
-          const getComponent = (type: string) =>
-            components.find((component) => component.types.includes(type))?.long_name ?? ''
-
-          const streetNumber = getComponent('street_number')
-          const route = getComponent('route')
-          const sublocality =
-            getComponent('sublocality_level_1') || getComponent('sublocality')
-          const locality = getComponent('locality')
-          const district = getComponent('administrative_area_level_2')
-          const adminState = getComponent('administrative_area_level_1')
-          const postalCode = getComponent('postal_code')
-          const firstLine =
-            [streetNumber, route].filter(Boolean).join(' ') ||
-            sublocality ||
-            primaryResult.formatted_address?.split(',')[0] ||
-            ''
-
-          setValue('addressLine1', firstLine, { shouldValidate: true, shouldDirty: true })
-          setValue('addressLine2', sublocality, { shouldValidate: false, shouldDirty: true })
-          setValue('city', district || locality, { shouldValidate: true, shouldDirty: true })
-
-          const normalizedState = normalizeStateName(adminState)
-          if (normalizedState) {
-            setValue('state', normalizedState, { shouldValidate: true, shouldDirty: true })
-          }
-
-          if (postalCode) {
-            setValue('pincode', postalCode, { shouldValidate: true, shouldDirty: true })
-          }
-
-          toast.success('Location detected. Review the address before saving.')
-        } catch {
-          toast.info('Location captured. Complete the address manually.')
         } finally {
           setLocating(false)
         }
@@ -272,6 +283,13 @@ export function AddressForm({
         timeout: 10000,
         enableHighAccuracy: true,
       },
+    )
+  }
+
+  const handleMapPinSelect = async (lat: number, lng: number) => {
+    await applyReverseGeocode(
+      { lat, lng },
+      'Location pinned on map. Review address and save.',
     )
   }
 
@@ -340,6 +358,65 @@ export function AddressForm({
         {locating ? <Loader2 className="h-4 w-4 animate-spin" /> : <MapPin className="h-4 w-4" />}
         {locating ? 'Detecting location...' : 'Use my current location'}
       </button>
+
+      {hasGoogleMapsKey && (
+        <div className="overflow-hidden rounded-xl border border-gray-200">
+          <div className="flex items-center justify-between border-b border-gray-100 bg-gray-50 px-3 py-2">
+            <p className="text-xs font-semibold text-gray-700">
+              Pinpoint delivery location on map
+            </p>
+            {coordinates.lat != null && coordinates.lng != null && (
+              <span className="text-[11px] text-gray-500">
+                {coordinates.lat.toFixed(5)}, {coordinates.lng.toFixed(5)}
+              </span>
+            )}
+          </div>
+          {mapLoadError ? (
+            <div className="px-3 py-4 text-xs text-red-500">
+              Google Maps failed to load. Please check your Maps API key restrictions.
+            </div>
+          ) : !mapLoaded ? (
+            <div className="flex h-[220px] items-center justify-center bg-gray-50 text-xs text-gray-500">
+              Loading map...
+            </div>
+          ) : (
+            <GoogleMap
+              mapContainerStyle={{ width: '100%', height: '220px' }}
+              center={mapCenter}
+              zoom={15}
+              options={{
+                streetViewControl: false,
+                mapTypeControl: false,
+                fullscreenControl: false,
+                gestureHandling: 'greedy',
+              }}
+              onClick={(event: google.maps.MapMouseEvent) => {
+                const clickedLat = event.latLng?.lat()
+                const clickedLng = event.latLng?.lng()
+                if (clickedLat == null || clickedLng == null) {
+                  return
+                }
+                void handleMapPinSelect(clickedLat, clickedLng)
+              }}
+            >
+              {coordinates.lat != null && coordinates.lng != null && (
+                <MarkerF
+                  position={{ lat: coordinates.lat, lng: coordinates.lng }}
+                  draggable
+                  onDragEnd={(event: google.maps.MapMouseEvent) => {
+                    const nextLat = event.latLng?.lat()
+                    const nextLng = event.latLng?.lng()
+                    if (nextLat == null || nextLng == null) {
+                      return
+                    }
+                    void handleMapPinSelect(nextLat, nextLng)
+                  }}
+                />
+              )}
+            </GoogleMap>
+          )}
+        </div>
+      )}
 
       <div>
         <label className="mb-1.5 block text-sm font-medium text-gray-700">
@@ -603,4 +680,55 @@ async function lookupIndiaPost(pincode: string): Promise<IndiaPostLookupResult> 
 function normalizeStateName(state: string) {
   const mapped = GOOGLE_STATE_MAP[state] ?? state
   return INDIAN_STATES.includes(mapped as (typeof INDIAN_STATES)[number]) ? mapped : ''
+}
+
+async function reverseGeocodeCoordinates(
+  lat: number,
+  lng: number,
+  key: string,
+): Promise<ReverseGeocodeResult | null> {
+  const response = await fetch(
+    `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${key}`,
+  )
+  const data = (await response.json()) as {
+    status?: string
+    results?: Array<{
+      formatted_address?: string
+      address_components?: Array<{ long_name: string; types: string[] }>
+    }>
+  }
+
+  if (data.status !== 'OK' || !data.results?.length) {
+    return null
+  }
+
+  const primaryResult = data.results[0]
+  if (!primaryResult) {
+    return null
+  }
+
+  const components = primaryResult.address_components ?? []
+  const getComponent = (type: string) =>
+    components.find((component) => component.types.includes(type))?.long_name ?? ''
+
+  const streetNumber = getComponent('street_number')
+  const route = getComponent('route')
+  const sublocality = getComponent('sublocality_level_1') || getComponent('sublocality')
+  const locality = getComponent('locality')
+  const district = getComponent('administrative_area_level_2')
+  const adminState = getComponent('administrative_area_level_1')
+  const postalCode = getComponent('postal_code')
+  const firstLine =
+    [streetNumber, route].filter(Boolean).join(' ') ||
+    sublocality ||
+    primaryResult.formatted_address?.split(',')[0] ||
+    ''
+
+  return {
+    addressLine1: firstLine,
+    addressLine2: sublocality || undefined,
+    city: district || locality,
+    state: adminState || undefined,
+    pincode: postalCode || undefined,
+  }
 }
