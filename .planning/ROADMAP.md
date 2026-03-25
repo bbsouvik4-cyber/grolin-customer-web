@@ -4,13 +4,15 @@
 
 A 9-phase visual redesign of the Grolin grocery PWA. The app is fully functional — this milestone transforms its appearance from generic AI-built to premium editorial quality that would impress a Zepto design team. Phases execute in strict order: audit first, fix broken next, then layer design tokens → typography → depth → motion → component polish → video → final QA.
 
+Planning contract: Phase 2 keeps its existing expanded plan package. From Phase 3 onward, each phase should be planned as one detailed `XX-PLAN.md`, with inline subphases or waves only when they materially help execution rather than separate research, validation, or per-subphase planning files unless explicitly requested.
+
 ## Phases
 
-- [ ] **Phase 1: Audit** — Document every visual gap, broken element, and AI-slop pattern
+- [x] **Phase 1: Audit** — Documented every visual gap, broken element, and AI-slop pattern
 - [ ] **Phase 2: Fix Broken** — Resolve hero 404s, CORS errors, infinite spinner, blank product detail, empty grid
 - [ ] **Phase 3: Design Tokens** — Add mesh gradients, grain overlay, gradient text, warm skeleton, glow shadows, editorial CSS utilities
 - [ ] **Phase 4: Typography** — Editorial hierarchy across section headers, product cards, nav, footer
-- [ ] **Phase 5: Depth & Surface** — Warm ivory backgrounds, shadows replacing borders, alternating sections, grain on hero/promo
+- [x] **Phase 5: Depth & Surface** — Warm ivory backgrounds, shadows replacing borders, alternating sections, grain on hero/promo (completed 2026-03-25)
 - [ ] **Phase 6: Motion** — LazyMotion, motion variants, ViewportReveal, card stagger, Add→Stepper morph, hero entrance
 - [ ] **Phase 7: Component Polish** — Hero, cards, header, footer, BottomNav, scroll containers, empty states, loading states
 - [ ] **Phase 8: Remotion Video** — Hero loop video composition and integration
@@ -32,8 +34,8 @@ A 9-phase visual redesign of the Grolin grocery PWA. The app is fully functional
 **Plans**: 2 plans
 
 Plans:
-- [ ] 01-01: Read all layout, page, and component files — inventory current state
-- [ ] 01-02: Document broken elements + visual gaps with specific fix recommendations
+- [x] 01-01: Read all layout, page, and component files — inventory current state
+- [x] 01-02: Document broken elements + visual gaps with specific fix recommendations
 
 ---
 
@@ -50,9 +52,9 @@ Plans:
 **Plans**: 3 plans
 
 Plans:
-- [ ] 02-01: Fix hero images (replace 404 URLs with local assets or gradient placeholders)
-- [ ] 02-02: Fix category images (CORS → local demo-catalog SVGs or emoji fallbacks)
-- [ ] 02-03: Fix product detail blank + product grid empty state
+- [x] 02-01: Fix hero images (replace 404 URLs with local assets or gradient placeholders)
+- [x] 02-02: Fix category images (CORS → local demo-catalog SVGs or emoji fallbacks)
+- [x] 02-03: Fix product detail blank + product grid empty state
 
 ---
 
@@ -67,11 +69,10 @@ Plans:
   4. `.btn-press`, `.card-hover`, `.glow-shadow-*` utilities available
   5. Tailwind `boxShadow` config has `warm-sm`, `warm-md`, `warm-lg`, `glow` tokens
   6. `--shop-canvas: #F0ECE8` is the default page background
-**Plans**: 2 plans
+**Plans**: 1 detailed plan
 
 Plans:
-- [ ] 03-01: Add missing CSS utilities to globals.css (mesh, grain, gradient text, btn-press, card-hover)
-- [ ] 03-02: Extend tailwind.config.ts with warm shadow tokens + verify all classes compile
+- [x] 03-PLAN: Detailed design-token plan with explicit defaults, token cleanup, semantic alias completion, and Tailwind shadow alignment
 
 ---
 
@@ -85,11 +86,10 @@ Plans:
   3. Header/nav text uses tight tracking (`tracking-tight`) consistently
   4. Footer uses muted small-caps or reduced-weight treatment
   5. No mixed font sizes on same hierarchy level
-**Plans**: 2 plans
+**Plans**: 1 detailed plan
 
 Plans:
-- [ ] 04-01: Apply editorial typography to home sections, header, and nav components
-- [ ] 04-02: Apply correct type scale to product cards, footer, and secondary UI elements
+- [x] 04-PLAN: Detailed typography plan covering editorial headings, commerce hierarchy, navigation/footer scale, and auth/fallback cleanup
 
 ---
 
@@ -103,12 +103,10 @@ Plans:
   3. Home sections alternate background tone (canvas / white / canvas)
   4. Hero and at least one promo section have `.grain-overlay`
   5. Image zones have warm gradient overlay (not plain gray)
-**Plans**: 3 plans
+**Plans**: 1 detailed plan
 
 Plans:
-- [ ] 05-01: Set warm ivory background on body/layout, remove flat white sections
-- [ ] 05-02: Replace card borders with warm shadows across all card components
-- [ ] 05-03: Add grain overlay to hero + promo sections, warm gradient to image zones
+- [x] 05-PLAN: Detailed depth plan covering canvas warmth, section rhythm, card elevation, and image-zone texture
 
 ---
 
@@ -123,12 +121,10 @@ Plans:
   4. Product grid cards stagger in with 50ms delay
   5. Add-to-cart → stepper transition is smooth morph, not jump
   6. Hero headline/subtext staggers in on mount
-**Plans**: 3 plans
+**Plans**: 1 detailed plan
 
 Plans:
-- [ ] 06-01: Configure LazyMotion in app/layout.tsx, write motion-variants.ts with core variants
-- [ ] 06-02: Apply ViewportReveal + stagger to home sections and product grid
-- [ ] 06-03: Animate hero entrance + Add→Stepper cart morph
+- [ ] 06-PLAN: Detailed motion plan covering shared motion primitives, reveal choreography, and hero/cart interaction consistency
 
 ---
 
@@ -143,30 +139,26 @@ Plans:
   4. BottomNav: elevated shadow, active indicator is visually distinct
   5. Empty states: illustration or emoji treatment, not just plain text
   6. Skeleton loading: warm ivory base, not flat gray
-**Plans**: 4 plans
+**Plans**: 1 detailed plan
 
 Plans:
-- [ ] 07-01: Polish Hero, BannerCarousel, and home section components
-- [ ] 07-02: Polish ProductCard, ProductGrid, and product-related UI
-- [ ] 07-03: Polish Header, BottomNav, Shell layout
-- [ ] 07-04: Polish empty states, loading skeletons, and fallback UI
+- [ ] 07-PLAN: Detailed component-polish plan covering hero, commerce cards, navigation chrome, and fallback/loading surfaces
 
 ---
 
 ### Phase 8: Remotion Video
-**Goal**: Hero loop video composition is built and integrated — a 10-15s looping ambient video for the hero section background. Skip cleanly if source assets are missing.
+**Goal**: The existing hero loop video system is refined into a production-ready branded motion layer with a real master render, reliable local outputs, device-aware integration, and graceful fallback behavior.
 **Depends on**: Phase 7
 **Requirements**: VIDEO-01
 **Success Criteria** (what must be TRUE):
   1. `remotion/` directory has a valid composition that renders without errors
-  2. Hero accepts `videoSrc` prop and renders video with overlay when provided
-  3. If `public/videos/hero-loop.mp4` missing → graceful fallback to gradient (no crash)
-  4. Video renders at 1280×720 minimum resolution
-**Plans**: 2 plans
+  2. Hero uses the rendered video intentionally on desktop and preserves a premium fallback path on mobile
+  3. If `public/videos/hero-loop.mp4` or `.webm` is missing → graceful fallback to poster / gradient treatment (no crash)
+  4. Video renders at `1280x720` minimum resolution
+**Plans**: 1 detailed plan
 
 Plans:
-- [ ] 08-01: Build Remotion composition for hero loop (gradient + product imagery)
-- [ ] 08-02: Integrate video into Hero component with fallback handling
+- [ ] 08-PLAN: Detailed Remotion-video plan with subphases covering the master composition contract, composition refinement, hero integration rules, render outputs, and verification
 
 ---
 
@@ -180,12 +172,10 @@ Plans:
   3. Zero console errors that affect visual rendering
   4. LCP < 3s on simulated 3G (Lighthouse)
   5. No obvious accessibility regressions (contrast, focus states)
-**Plans**: 3 plans
+**Plans**: 1 detailed plan
 
 Plans:
-- [ ] 09-01: Run AI Slop Test on all routes — document + fix remaining slop
-- [ ] 09-02: Mobile QA pass — 375px audit on all routes
-- [ ] 09-03: Performance audit + final commit
+- [ ] 09-PLAN: Detailed final QA plan with subphases covering the polish checklist, AI-slop audit, route-matrix review, performance/accessibility sanity, and closeout fixes
 
 ---
 
@@ -193,15 +183,15 @@ Plans:
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Audit | 0/2 | Not started | - |
-| 2. Fix Broken | 0/3 | Not started | - |
-| 3. Design Tokens | 0/2 | Not started | - |
-| 4. Typography | 0/2 | Not started | - |
-| 5. Depth & Surface | 0/3 | Not started | - |
-| 6. Motion | 0/3 | Not started | - |
-| 7. Component Polish | 0/4 | Not started | - |
-| 8. Remotion Video | 0/2 | Not started | - |
-| 9. Final Polish + QA | 0/3 | Not started | - |
+| 1. Audit | 2/2 | Completed | 2026-03-25 |
+| 2. Fix Broken | 3/3 | Awaiting Verification | - |
+| 3. Design Tokens | 1/1 | Awaiting Verification | - |
+| 4. Typography | 1/1 | Awaiting Verification | - |
+| 5. Depth & Surface | 1/1 | Complete   | 2026-03-25 |
+| 6. Motion | 0/1 | Planned | - |
+| 7. Component Polish | 0/1 | Planned | - |
+| 8. Remotion Video | 0/1 | Planned | - |
+| 9. Final Polish + QA | 0/1 | Planned | - |
 
 ---
 *Roadmap created: 2026-03-25*
