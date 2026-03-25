@@ -28,7 +28,7 @@ export default function NotificationsPage() {
     const [filter, setFilter] = useState<'all' | 'unread'>('all')
 
     useEffect(() => {
-        document.title = 'Notifications — Grolin Grocery'
+        document.title = 'Notifications - Grolin Grocery'
     }, [])
 
     const { data, isLoading } = useQuery({
@@ -83,7 +83,7 @@ export default function NotificationsPage() {
 
     if (isLoading) {
         return (
-            <div className="px-6 py-6 space-y-3">
+            <div className="space-y-3 px-6 py-6">
                 {Array.from({ length: 6 }).map((_, i) => (
                     <Skeleton key={i} className="h-20 w-full rounded-xl" />
                 ))}
@@ -102,9 +102,9 @@ export default function NotificationsPage() {
                         variant="outline"
                         size="sm"
                         onClick={() => markAllRead.mutate()}
-                        className="text-brand-500 border-brand-200"
+                        className="border-brand-200 text-brand-500"
                     >
-                        <CheckCheck className="w-4 h-4 mr-1" /> Mark all read
+                        <CheckCheck className="mr-1 h-4 w-4" /> Mark all read
                     </Button>
                 ) : null}
             />
@@ -117,7 +117,9 @@ export default function NotificationsPage() {
                         onClick={() => setFilter(f)}
                         className={cn(
                             'flex-1 rounded-lg py-2 text-sm font-medium transition-all',
-                            filter === f ? 'bg-white text-[color:var(--shop-ink)] shadow-sm' : 'text-[color:var(--shop-ink-muted)] hover:text-[color:var(--shop-ink)]',
+                            filter === f
+                                ? 'bg-white text-[color:var(--shop-ink)] shadow-sm'
+                                : 'text-[color:var(--shop-ink-muted)] hover:text-[color:var(--shop-ink)]',
                         )}
                     >
                         {f === 'all' ? 'All' : 'Unread'}
@@ -141,21 +143,21 @@ export default function NotificationsPage() {
                                 type="button"
                                 onClick={() => handleNotificationClick(notif)}
                                 className={cn(
-                                    'flex w-full items-start gap-3 rounded-[22px] border p-4 text-left transition-colors',
+                                    'flex w-full items-start gap-3 rounded-[22px] p-4 text-left transition-all duration-200',
                                     notif.is_read
-                                        ? 'bg-white/92 border-[color:var(--shop-border)] hover:bg-gray-50'
-                                        : 'bg-[var(--shop-seasonal-accent-wash)] border-[color:var(--shop-border)] hover:bg-[#eef8f0]',
+                                        ? 'bg-[color:var(--shop-surface-elevated)] shadow-[var(--shop-shadow-level-1)] hover:shadow-[var(--shop-shadow-level-2)]'
+                                        : 'bg-[color:var(--shop-primary-soft)] shadow-[var(--shop-shadow-level-2)] hover:shadow-[var(--shop-shadow-level-3)]',
                                 )}
                             >
-                                <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0">
-                                    <Icon className="w-4 h-4 text-gray-500" />
+                                <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-[color:var(--shop-primary-soft)]">
+                                    <Icon className="h-4 w-4 text-[color:var(--shop-primary)]" />
                                 </div>
-                                <div className="flex-1 min-w-0">
-                                    <p className={cn('text-sm', notif.is_read ? 'text-gray-700' : 'font-semibold text-gray-900')}>
+                                <div className="min-w-0 flex-1">
+                                    <p className={cn('text-sm text-[color:var(--shop-ink)]', !notif.is_read && 'font-semibold')}>
                                         {notif.title}
                                     </p>
-                                    <p className="text-xs text-gray-500 mt-0.5 line-clamp-2">{notif.body}</p>
-                                    <p className="text-[11px] text-gray-400 mt-1">{timeAgo(notif.created_at)}</p>
+                                    <p className="mt-0.5 line-clamp-2 text-xs text-[color:var(--shop-ink-muted)]">{notif.body}</p>
+                                    <p className="mt-1 text-[11px] text-[color:var(--shop-ink-faint)]">{timeAgo(notif.created_at)}</p>
                                 </div>
                                 {!notif.is_read && <div className="mt-2 h-2 w-2 flex-shrink-0 rounded-full bg-[color:var(--shop-primary)]" />}
                             </button>
