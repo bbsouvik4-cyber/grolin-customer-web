@@ -54,13 +54,21 @@ export function HomePromiseBanner() {
           </div>
 
           <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
-            <div className="hidden md:block overflow-hidden rounded-[20px]">
+            <div className="relative hidden md:block overflow-hidden rounded-[20px] shadow-[var(--shop-shadow-level-2)]">
               <Image
                 src="/images/promo/promo-lifestyle.png"
                 alt="Grolin lifestyle"
                 width={480}
                 height={280}
                 className="w-full object-cover rounded-[20px]"
+              />
+              {/* Warm atmospheric overlay on promo image zone */}
+              <div
+                aria-hidden="true"
+                className="absolute inset-0 rounded-[20px] pointer-events-none"
+                style={{
+                  background: 'linear-gradient(135deg, rgba(240,236,232,0.18) 0%, transparent 50%, rgba(110,73,216,0.10) 100%)',
+                }}
               />
             </div>
 

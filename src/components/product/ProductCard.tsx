@@ -1,352 +1,373 @@
-'use client'
+﻿'use client'
 
 import React from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { Loader2, Minus, Plus, ShoppingBasket, Star } from 'lucide-react'
-import { motion } from 'framer-motion'
+import { Loader2, Minus, Plus, ShoppingCart } from 'lucide-react'
+import { m, AnimatePresence } from 'framer-motion'
 import { useCart } from '@/hooks/useCart'
+import { useFlyToCart } from '@/hooks/useFlyToCart'
 import { WishlistButton } from '@/components/product/WishlistButton'
+import { PRODUCT_IMAGE_PLACEHOLDER, getProductImageSrc } from '@/lib/media'
 import { discountPercent, formatINR, cn } from '@/lib/utils'
 import type { Product } from '@/types/product.types'
 
 interface Props {
-    product: Product
-    showNewBadge?: boolean
-    priority?: boolean
-    variant?: 'default' | 'section'
-}
-
-function formatUnitLabel(unit: Product['unit']) {
-    const map: Record<Product['unit'], string> = {
-        kg: '1 Kg',
-        g: '500 g',
-        l: '1 L',
-        ml: '500 ml',
-        piece: '1 Piece',
-        pack: '1 Pack',
-    }
-    return map[unit] ?? '1 Piece'
+  product: Product
+  showNewBadge?: boolean
+  priority?: boolean
+  variant?: 'default' | 'section'
 }
 
 function formatBadgeUnit(unit: Product['unit']) {
-    const map: Record<Product['unit'], string> = {
-        kg: '1kg',
-        g: '500g',
-        l: '1L',
-        ml: '500ml',
-        piece: '1pc',
-        pack: '1pack',
-    }
-    return map[unit] ?? '1pc'
+  const map: Record<Product['unit'], string> = {
+    kg: '1kg',
+    g: '500g',
+    l: '1L',
+    ml: '500ml',
+    piece: '1pc',
+    pack: '1pack',
+  }
+  return map[unit] ?? '1pc'
 }
 
 function formatTagLabel(product: Product) {
-    const raw = product.tags?.[0]?.trim()
-    if (!raw) return 'Curated Grocery'
-    return raw
-        .replace(/[-_]+/g, ' ')
-        .replace(/\s+/g, ' ')
-        .replace(/\b\w/g, (char) => char.toUpperCase())
+  const raw = product.tags?.[0]?.trim()
+  if (!raw) return 'Curated Grocery'
+  return raw
+    .replace(/[-_]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .replace(/\b\w/g, (char) => char.toUpperCase())
 }
 
-function reviewScore(product: Product) {
-    const sold = Math.max(1, product.total_sold || 1)
-    return Math.min(5, Math.max(4.1, 4 + sold / 200)).toFixed(1)
+function getUnitPriceLabel(amount: number, unit: Product['unit']) {
+  switch (unit) {
+    case 'kg':
+      return `${formatINR(amount)}/kg`
+    case 'g':
+      return `${formatINR(amount / 5)}/100g`
+    case 'l':
+      return `${formatINR(amount)}/L`
+    case 'ml':
+      return `${formatINR(amount / 5)}/100ml`
+    case 'piece':
+      return `${formatINR(amount)}/piece`
+    case 'pack':
+      return `${formatINR(amount)}/pack`
+    default:
+      return null
+  }
 }
 
-function ProductRating({ product }: { product: Product }) {
+function ProductBadge({
+  discount,
+  displayTag,
+  showNewBadge,
+  showPopular,
+}: {
+  discount: number | null
+  displayTag: string
+  showNewBadge?: boolean
+  showPopular?: boolean
+}) {
+  if (discount) {
     return (
-        <div className="flex items-center gap-1.5">
-            {Array.from({ length: 5 }).map((_, index) => (
-                <Star key={index} className="h-3.5 w-3.5 fill-[#EAB308] text-[#EAB308]" />
-            ))}
-            <span className="text-[12px] font-medium text-[#6D7680]">({reviewScore(product)})</span>
-        </div>
+      <span className="inline-flex rounded-full bg-[color:var(--shop-discount)] px-2 py-1 text-[10px] font-bold uppercase tracking-[0.08em] text-white shadow-[var(--shop-shadow-level-1)]">
+        {discount}% OFF
+      </span>
     )
+  }
+
+  if (showNewBadge) {
+    return (
+      <span className="inline-flex rounded-full bg-[color:var(--shop-primary)] px-2 py-1 text-[10px] font-bold uppercase tracking-[0.08em] text-white shadow-[var(--shop-shadow-level-1)]">
+        New
+      </span>
+    )
+  }
+
+  if (showPopular) {
+    return (
+      <span className="inline-flex rounded-full bg-[#E3B93C] px-2.5 py-1 text-[10px] font-bold text-white shadow-[var(--shop-shadow-level-1)]">
+        🔥 Popular
+      </span>
+    )
+  }
+
+  return (
+    <span className="inline-flex max-w-[132px] truncate rounded-full bg-[color:var(--shop-surface)] px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.08em] text-[color:var(--shop-primary)] shadow-[var(--shop-shadow-level-1)]">
+      {displayTag}
+    </span>
+  )
 }
 
 function ProductAction({
-    product,
-    qty,
-    max,
-    outOfStock,
-    isAdding,
-    isUpdating,
-    addToCart,
-    updateQty,
-    removeFromCart,
+  product,
+  qty,
+  max,
+  outOfStock,
+  isAdding,
+  isUpdating,
+  updateQty,
+  removeFromCart,
+  onAdd,
 }: {
-    product: Product
-    qty: number
-    max: number
-    outOfStock: boolean
-    isAdding: boolean
-    isUpdating: boolean
-    addToCart: (productId: string, qty?: number) => void
-    updateQty: (productId: string, qty: number) => void
-    removeFromCart: (productId: string) => void
+  product: Product
+  qty: number
+  max: number
+  outOfStock: boolean
+  isAdding: boolean
+  isUpdating: boolean
+  updateQty: (productId: string, qty: number) => void
+  removeFromCart: (productId: string) => void
+  onAdd: () => void
 }) {
-    if (outOfStock) {
-        return (
-            <span className="inline-flex h-10 items-center rounded-full bg-[#EEF1F3] px-4 text-[12px] font-semibold text-[#7A838C]">
-                Out of stock
-            </span>
-        )
-    }
-
-    if (qty === 0) {
-        return (
-            <button
-                type="button"
-                onClick={(event) => {
-                    event.preventDefault()
-                    event.stopPropagation()
-                    addToCart(product.id, 1)
-                }}
-                disabled={isAdding}
-                className="inline-flex h-11 items-center justify-center gap-2 rounded-full bg-[color:var(--shop-primary)] px-4 text-[13px] font-semibold text-white shadow-[0_12px_24px_rgba(104,72,198,0.22)] transition-colors hover:bg-[color:var(--shop-primary-hover)] disabled:cursor-not-allowed disabled:opacity-55"
-                aria-label={`Add ${product.name} to cart`}
-            >
-                {isAdding ? <Loader2 className="h-4 w-4 animate-spin" /> : <ShoppingBasket className="h-4 w-4" />}
-                Add
-            </button>
-        )
-    }
-
+  if (outOfStock) {
     return (
-        <div
-            className="inline-flex h-11 items-center gap-1 rounded-full border border-[rgba(104,72,198,0.16)] bg-[rgba(104,72,198,0.08)] px-1"
-            onClick={(event) => {
-                event.preventDefault()
-                event.stopPropagation()
-            }}
-        >
-            <button
-                type="button"
-                onClick={() => (qty === 1 ? removeFromCart(product.id) : updateQty(product.id, qty - 1))}
-                disabled={isUpdating}
-                className="flex h-9 w-9 items-center justify-center rounded-full text-[color:var(--shop-primary)] transition-colors hover:bg-white/80 disabled:opacity-40"
-                aria-label={`Decrease quantity of ${product.name}`}
-            >
-                <Minus className="h-3.5 w-3.5" strokeWidth={2.4} />
-            </button>
-            <span className="min-w-[18px] text-center text-[13px] font-bold text-[#16202A]">{qty}</span>
-            <button
-                type="button"
-                onClick={() => {
-                    if (qty < max) updateQty(product.id, qty + 1)
-                }}
-                disabled={isUpdating || qty >= max}
-                className="flex h-9 w-9 items-center justify-center rounded-full bg-[color:var(--shop-primary)] text-white transition-colors hover:bg-[color:var(--shop-primary-hover)] disabled:opacity-40"
-                aria-label={`Increase quantity of ${product.name}`}
-            >
-                <Plus className="h-3.5 w-3.5" strokeWidth={2.4} />
-            </button>
-        </div>
+      <span className="inline-flex h-9 w-full items-center justify-center rounded-[10px] border border-[color:var(--shop-border)] bg-[color:var(--shop-surface-subtle)] px-4 text-[12px] font-semibold text-[color:var(--shop-ink-muted)]">
+        Out of stock
+      </span>
     )
+  }
+
+  return (
+    <AnimatePresence mode="wait" initial={false}>
+      {qty === 0 ? (
+        <m.button
+          key="add"
+          initial={{ opacity: 0, scale: 0.85 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 0.85 }}
+          transition={{ duration: 0.18, ease: [0.25, 0.46, 0.45, 0.94] }}
+          type="button"
+          onClick={(event) => {
+            event.preventDefault()
+            event.stopPropagation()
+            onAdd()
+          }}
+          disabled={isAdding}
+          className="inline-flex h-9 w-full items-center justify-center gap-2 rounded-[10px] px-4 text-[13px] font-bold text-white shadow-green-glow hover:shadow-green-glow-hover btn-press transition-all duration-150 disabled:cursor-not-allowed disabled:opacity-55"
+          style={{ backgroundImage: 'linear-gradient(135deg, #16945E 0%, #128050 100%)' }}
+          aria-label={`Add ${product.name} to cart`}
+        >
+          {isAdding ? <Loader2 className="h-4 w-4 animate-spin" /> : <ShoppingCart className="h-4 w-4" strokeWidth={2.2} />}
+          Add
+        </m.button>
+      ) : (
+        <m.div
+          key="stepper"
+          initial={{ opacity: 0, scale: 0.85 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 0.85 }}
+          transition={{ duration: 0.22, ease: [0.34, 1.56, 0.64, 1] }}
+          className="grid h-9 w-full grid-cols-3 overflow-hidden rounded-[10px] bg-[color:var(--shop-action)] text-white shadow-[var(--shop-shadow-level-1)]"
+          onClick={(event) => {
+            event.preventDefault()
+            event.stopPropagation()
+          }}
+        >
+          <button
+            type="button"
+            onClick={() => (qty === 1 ? removeFromCart(product.id) : updateQty(product.id, qty - 1))}
+            disabled={isUpdating}
+            className="flex h-full items-center justify-center border-r border-white/15 transition-colors hover:bg-[color:var(--shop-action-hover)] disabled:opacity-40"
+            aria-label={`Decrease quantity of ${product.name}`}
+          >
+            <Minus className="h-3.5 w-3.5" strokeWidth={2.4} />
+          </button>
+          <span className="flex h-full items-center justify-center text-[15px] font-bold tabular-nums">{qty}</span>
+          <button
+            type="button"
+            onClick={() => {
+              if (qty < max) updateQty(product.id, qty + 1)
+            }}
+            disabled={isUpdating || qty >= max}
+            className="flex h-full items-center justify-center border-l border-white/15 transition-colors hover:bg-[color:var(--shop-action-hover)] disabled:opacity-40"
+            aria-label={`Increase quantity of ${product.name}`}
+          >
+            <Plus className="h-3.5 w-3.5" strokeWidth={2.4} />
+          </button>
+        </m.div>
+      )}
+    </AnimatePresence>
+  )
 }
 
 export const ProductCard = React.memo(function ProductCard({
-    product,
-    showNewBadge,
-    priority = false,
-    variant = 'default',
+  product,
+  showNewBadge,
+  priority = false,
+  variant = 'default',
 }: Props) {
-    const { addToCart, updateQty, removeFromCart, getQty, isAdding, isUpdating } = useCart()
-    const qty = getQty(product.id)
-    const displayPrice = product.sale_price ?? product.price
-    const discount =
-        product.sale_price !== null && product.sale_price < product.price
-            ? discountPercent(product.price, product.sale_price)
-            : null
-    const max = product.max_order_qty ?? Math.min(product.stock_quantity, 10)
-    const outOfStock = product.stock_quantity === 0
-    const displayTag = formatTagLabel(product)
+  const { addToCart, updateQty, removeFromCart, getQty, isAdding, isUpdating } = useCart()
+  const flyToCart = useFlyToCart()
+  const imageRef = React.useRef<HTMLDivElement | null>(null)
+  const qty = getQty(product.id)
+  const salePrice = product.sale_price ?? product.salePrice ?? null
+  const displayPrice = salePrice ?? product.price
+  const discount = salePrice !== null && salePrice < product.price ? discountPercent(product.price, salePrice) : null
+  const max = product.max_order_qty ?? Math.min(product.stock_quantity, 10)
+  const outOfStock = product.stock_quantity === 0
+  const displayTag = formatTagLabel(product)
+  const showPopular = !discount && (product.weekly_sales ?? 0) > 500
+  const resolvedImageSrc = React.useMemo(() => getProductImageSrc(product), [product])
+  const [imageFailed, setImageFailed] = React.useState(false)
+  const unitRateLabel = getUnitPriceLabel(displayPrice, product.unit)
+  const isSection = variant === 'section'
 
-    const imageSrc = product.thumbnail_url || product.images?.[0] || '/placeholder-product.svg'
+  React.useEffect(() => {
+    setImageFailed(false)
+  }, [resolvedImageSrc])
 
-    if (variant === 'section') {
-        return (
-            <motion.article
-                whileHover={{ y: -4 }}
-                transition={{ type: 'spring', stiffness: 320, damping: 24 }}
-                className="group relative flex h-full flex-col rounded-[26px] border border-white/70 bg-[linear-gradient(180deg,rgba(255,255,255,0.94)_0%,rgba(247,243,255,0.94)_100%)] p-4 shadow-[0_14px_32px_rgba(42,28,92,0.08)] transition-shadow duration-200 hover:shadow-[0_20px_38px_rgba(42,28,92,0.14)]"
-            >
-                <div className="mb-3 flex items-center justify-between gap-2">
-                    <span className="max-w-[70%] truncate rounded-full bg-[rgba(104,72,198,0.08)] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-[color:var(--shop-primary)]">
-                        {displayTag}
-                    </span>
-                    <WishlistButton productId={product.id} className="h-9 w-9 rounded-full border-white/80 bg-white/92" />
-                </div>
+  const imageSrc = imageFailed ? PRODUCT_IMAGE_PLACEHOLDER : resolvedImageSrc
 
-                <Link href={`/products/${product.slug}`} className="block">
-                    <div className="relative h-[146px] overflow-hidden rounded-[22px] bg-[linear-gradient(180deg,rgba(248,245,255,0.98)_0%,rgba(255,255,255,0.94)_100%)]">
-                        {discount && (
-                            <span className="absolute left-3 top-3 z-10 rounded-full bg-[color:var(--shop-discount)] px-2.5 py-1 text-[10px] font-semibold text-white">
-                                {discount}% OFF
-                            </span>
-                        )}
-                        {!discount && showNewBadge && (
-                            <span className="absolute left-3 top-3 z-10 rounded-full bg-[#111827] px-2.5 py-1 text-[10px] font-semibold text-white">
-                                New
-                            </span>
-                        )}
-                        <Image
-                            src={imageSrc}
-                            alt={product.name}
-                            fill
-                            className={cn(
-                                'object-contain p-4 transition-transform duration-300 group-hover:scale-[1.03]',
-                                outOfStock && 'opacity-45 grayscale-[0.7]',
-                            )}
-                            sizes="(max-width: 640px) 214px, (max-width: 1024px) 228px, 244px"
-                            priority={priority}
-                        />
-                        {outOfStock && (
-                            <div className="pointer-events-none absolute inset-0 z-20 flex items-center justify-center rounded-[22px] bg-white/78">
-                                <span className="text-sm font-semibold text-[#6B7280]">Out of stock</span>
-                            </div>
-                        )}
-                    </div>
-                </Link>
-
-                <div className="mt-4 flex flex-1 flex-col">
-                    <div className="mb-2 flex items-center gap-2">
-                        <span className="inline-flex rounded-full border border-[#E1E5E8] bg-white px-2.5 py-1 text-[11px] font-medium text-[#5F6972]">
-                            {formatBadgeUnit(product.unit)}
-                        </span>
-                    </div>
-
-                    <Link href={`/products/${product.slug}`} className="block">
-                        <p className="line-clamp-2 text-[17px] font-semibold leading-[1.28] tracking-tight text-[#16202A]">
-                            {product.name}
-                        </p>
-                    </Link>
-                    <p className="mt-1 text-[13px] font-medium text-[#89939D]">{formatUnitLabel(product.unit)}</p>
-
-                    <div className="mt-3">
-                        <ProductRating product={product} />
-                    </div>
-
-                    <div className="mt-auto flex items-end justify-between gap-3 pt-4">
-                        <div className="min-w-0">
-                            <p className="text-[26px] font-extrabold leading-none tracking-tight text-[#16202A]">
-                                {formatINR(displayPrice)}
-                            </p>
-                            {discount && (
-                                <p className="mt-1 text-[12px] font-medium text-[#9AA1A9] line-through">
-                                    {formatINR(product.price)}
-                                </p>
-                            )}
-                        </div>
-
-                        <ProductAction
-                            product={product}
-                            qty={qty}
-                            max={max}
-                            outOfStock={outOfStock}
-                            isAdding={isAdding}
-                            isUpdating={isUpdating}
-                            addToCart={addToCart}
-                            updateQty={updateQty}
-                            removeFromCart={removeFromCart}
-                        />
-                    </div>
-                </div>
-            </motion.article>
-        )
+  const handleAdd = () => {
+    const cartElement = document.querySelector('[data-cart-icon]') as HTMLElement | null
+    if (imageRef.current && cartElement) {
+      flyToCart({
+        imageUrl: imageSrc,
+        fromElement: imageRef.current,
+        toElement: cartElement,
+      })
     }
+    addToCart(product.id, 1)
+  }
 
-    return (
-        <motion.article
-            whileHover={{ y: -3 }}
-            transition={{ type: 'spring', stiffness: 320, damping: 24 }}
-            className="group relative flex h-full flex-col rounded-[24px] border border-white/70 bg-[linear-gradient(180deg,rgba(255,255,255,0.96)_0%,rgba(247,243,255,0.96)_100%)] p-4 shadow-[0_12px_28px_rgba(42,28,92,0.08)] transition-shadow duration-200 hover:shadow-[0_18px_34px_rgba(42,28,92,0.12)]"
+  return (
+    <m.article
+      whileHover={{ y: -6, scale: 1.015 }}
+      whileTap={{ scale: 0.98 }}
+      transition={{ duration: 0.22, ease: [0.34, 1.56, 0.64, 1] }}
+      className={cn(
+        'group relative flex h-full flex-col overflow-hidden rounded-[22px] bg-[color:var(--shop-surface)] shadow-[var(--shop-shadow-level-1)] transition-shadow duration-200 hover:shadow-[var(--shop-shadow-level-5)]',
+        isSection && 'min-h-full',
+      )}
+    >
+      <span
+        className="pointer-events-none absolute inset-x-0 top-0 z-20 h-[3px] rounded-t-[22px] opacity-0 transition-opacity duration-220 group-hover:opacity-100"
+        style={{ background: 'linear-gradient(90deg, #6E49D8, #9B6DFF)' }}
+      />
+      <Link href={`/products/${product.slug}`} className="block">
+        <div
+          ref={imageRef}
+          data-product-image
+          className={cn(
+            'relative overflow-hidden bg-gradient-to-br from-[#F5F0EC] via-[#EDE8E3] to-[#E8E2DA] transition-all duration-[400ms] group-hover:from-[#F0EBE5] group-hover:to-[#DDD6CC]',
+            isSection ? 'h-[152px] md:h-[160px] lg:h-[168px]' : 'h-[148px] lg:h-[164px]',
+          )}
         >
-                <div className="mb-3 flex items-start justify-between gap-3">
-                <div>
-                    {discount ? (
-                        <span className="rounded-full bg-[color:var(--shop-discount)] px-2.5 py-1 text-[10px] font-semibold text-white">
-                            {discount}% OFF
-                        </span>
-                    ) : showNewBadge ? (
-                        <span className="rounded-full bg-[#111827] px-2.5 py-1 text-[10px] font-semibold text-white">
-                            New
-                        </span>
-                    ) : (
-                        <span className="rounded-full bg-[rgba(104,72,198,0.08)] px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-[color:var(--shop-primary)]">
-                            {displayTag}
-                        </span>
-                    )}
-                </div>
-                <WishlistButton productId={product.id} className="opacity-100 transition-opacity duration-200 sm:opacity-0 sm:group-hover:opacity-100 sm:focus-visible:opacity-100" />
+          <div className="absolute left-2 top-2 z-20">
+            <ProductBadge
+              discount={discount}
+              displayTag={displayTag}
+              showNewBadge={showNewBadge}
+              showPopular={showPopular}
+            />
+          </div>
+
+          <WishlistButton
+            productId={product.id}
+            className="absolute right-2 top-2 z-20 h-8 w-8 rounded-full border-[color:var(--shop-border)] bg-white text-[color:var(--shop-ink-faint)] shadow-[var(--shop-shadow-level-1)]"
+          />
+
+          {/* Warm edge vignette — subtle depth framing for product imagery */}
+          <div
+            aria-hidden="true"
+            className="absolute inset-0 z-10 pointer-events-none"
+            style={{
+              background: 'radial-gradient(ellipse at center, transparent 55%, rgba(232,226,218,0.35) 100%)',
+            }}
+          />
+
+          <Image
+            src={imageSrc}
+            alt={product.name}
+            fill
+            onError={() => setImageFailed(true)}
+            data-product-image
+            className={cn(
+              'object-contain object-center p-4 transition-transform duration-500 ease-out group-hover:scale-105',
+              outOfStock && 'opacity-45 grayscale-[0.7]',
+            )}
+            sizes={
+              isSection
+                ? '(max-width: 640px) 214px, (max-width: 1024px) 228px, 244px'
+                : '(max-width: 640px) 45vw, (max-width: 1200px) 22vw, 220px'
+            }
+            priority={priority}
+            unoptimized={imageSrc.startsWith('http')}
+          />
+        </div>
+      </Link>
+
+      <div className={cn('flex flex-1 flex-col p-3 pb-3.5', isSection && 'p-3.5')}>
+        <div className="mb-1.5 flex items-center gap-2">
+          <span className="inline-flex rounded-full bg-[color:var(--shop-primary-soft)] px-2 py-0.5 text-[11px] font-semibold uppercase tracking-[0.08em] text-[color:var(--shop-primary)]">
+            {formatBadgeUnit(product.unit)}
+          </span>
+        </div>
+
+        <Link href={`/products/${product.slug}`} className="block">
+          <p className="line-clamp-2 text-[14px] font-semibold leading-[1.45] tracking-[-0.01em] text-[color:var(--shop-ink)] lg:text-[15px]">
+            {product.name}
+          </p>
+        </Link>
+
+        {product.stock_quantity !== undefined && product.stock_quantity <= 5 && product.stock_quantity > 0 && (
+          <div className="mt-1 flex items-center gap-1">
+            <span
+              className="h-1.5 w-1.5 rounded-full"
+              style={{ backgroundColor: 'var(--shop-discount)', animation: 'pulse-ring 1.5s ease-out infinite' }}
+              aria-hidden="true"
+            />
+            <span className="text-[11px] font-bold uppercase tracking-[0.08em]" style={{ color: 'var(--shop-discount)' }}>
+              Only {product.stock_quantity} left
+            </span>
+          </div>
+        )}
+
+        {unitRateLabel ? (
+          <p className="mt-1.5 text-[12px] font-medium leading-5 text-[color:var(--shop-ink-faint)]">{unitRateLabel}</p>
+        ) : null}
+
+        <div className="mt-auto pt-3">
+          <div className="mb-2.5 flex items-end gap-1.5">
+            <p
+              className={cn(
+                'text-[20px] font-extrabold leading-none tracking-[-0.03em] sm:text-[21px]',
+                discount ? 'text-[color:var(--shop-discount)]' : 'text-[color:var(--shop-ink)]',
+              )}
+            >
+              {formatINR(displayPrice)}
+            </p>
+            {discount ? (
+              <p className="text-[12px] font-medium leading-none text-[color:var(--shop-ink-faint)] line-through">
+                {formatINR(product.price)}
+              </p>
+            ) : null}
+          </div>
+
+          {discount ? (
+            <div className="mb-2.5">
+              <span className="inline-flex rounded-full bg-[color:var(--shop-discount)] px-2.5 py-1 text-[10px] font-bold text-white shadow-[var(--shop-shadow-level-1)]">
+                Save {formatINR(product.price - displayPrice)}
+              </span>
             </div>
+          ) : null}
 
-            <Link href={`/products/${product.slug}`} className="block">
-                <div className="relative mb-4 h-[144px] rounded-[22px] bg-[linear-gradient(180deg,rgba(248,245,255,0.98)_0%,rgba(255,255,255,0.94)_100%)]">
-                    <Image
-                        src={imageSrc}
-                        alt={product.name}
-                        fill
-                        className={cn(
-                            'object-contain p-4 transition-transform duration-300 group-hover:scale-[1.03]',
-                            outOfStock && 'opacity-45 grayscale-[0.7]',
-                        )}
-                        sizes="(max-width: 640px) 45vw, (max-width: 1200px) 22vw, 220px"
-                        priority={priority}
-                    />
-                    {outOfStock && (
-                        <div className="pointer-events-none absolute inset-0 z-20 flex items-center justify-center rounded-[22px] bg-white/76">
-                            <span className="text-sm font-semibold text-[#6B7280]">Out of stock</span>
-                        </div>
-                    )}
-                </div>
-            </Link>
-
-            <div className="flex flex-1 flex-col">
-                <div className="mb-2 flex items-center gap-2">
-                    <span className="inline-flex rounded-full border border-[#E1E5E8] bg-white px-2.5 py-1 text-[11px] font-medium text-[#5F6972]">
-                        {formatBadgeUnit(product.unit)}
-                    </span>
-                </div>
-
-                <Link href={`/products/${product.slug}`} className="block">
-                    <p className="line-clamp-2 text-[17px] font-semibold leading-tight tracking-tight text-[#16202A]">
-                        {product.name}
-                    </p>
-                </Link>
-                <p className="mt-1 text-[13px] font-medium text-[#89939D]">{formatUnitLabel(product.unit)}</p>
-
-                <div className="mt-3">
-                    <ProductRating product={product} />
-                </div>
-
-                <div className="mt-auto flex items-end justify-between gap-3 pt-4">
-                    <div className="min-w-0">
-                        <p className="text-[28px] font-extrabold leading-none tracking-tight text-[#16202A]">
-                            {formatINR(displayPrice)}
-                        </p>
-                        {discount && (
-                            <p className="mt-1 text-[12px] font-medium text-[#9AA1A9] line-through">
-                                {formatINR(product.price)}
-                            </p>
-                        )}
-                    </div>
-
-                    <ProductAction
-                        product={product}
-                        qty={qty}
-                        max={max}
-                        outOfStock={outOfStock}
-                        isAdding={isAdding}
-                        isUpdating={isUpdating}
-                        addToCart={addToCart}
-                        updateQty={updateQty}
-                        removeFromCart={removeFromCart}
-                    />
-                </div>
-            </div>
-        </motion.article>
-    )
+          <ProductAction
+            product={product}
+            qty={qty}
+            max={max}
+            outOfStock={outOfStock}
+            isAdding={isAdding}
+            isUpdating={isUpdating}
+            updateQty={updateQty}
+            removeFromCart={removeFromCart}
+            onAdd={handleAdd}
+          />
+        </div>
+      </div>
+    </m.article>
+  )
 })
