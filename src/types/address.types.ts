@@ -23,10 +23,10 @@ export interface CreateAddressPayload {
     city: string
     pincode: string
     state: string
+    lat: number
+    lng: number
     label?: string
     addressLine2?: string
     landmark?: string
-    lat?: number
-    lng?: number
     isDefault?: boolean
 }

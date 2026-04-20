@@ -94,6 +94,8 @@ export function AddressForm({
 
   const pincode = watch('pincode')
   const selectedState = watch('state')
+  const hasPinnedCoordinates =
+    Number.isFinite(coordinates.lat) && Number.isFinite(coordinates.lng)
   const mapCenter = useMemo(
     () => ({
       lat: coordinates.lat ?? defaultValues?.lat ?? DEFAULT_MAP_CENTER.lat,
@@ -305,6 +307,11 @@ export function AddressForm({
       return
     }
 
+    if (!hasPinnedCoordinates) {
+      toast.error('Please pin your exact location on the map before saving.')
+      return
+    }
+
     await onSubmit({
       label: data.label,
       addressLine1: data.addressLine1,
@@ -314,8 +321,8 @@ export function AddressForm({
       state: data.state,
       pincode: data.pincode,
       isDefault: data.isDefault ?? false,
-      lat: coordinates.lat ?? defaultValues?.lat,
-      lng: coordinates.lng ?? defaultValues?.lng,
+      lat: coordinates.lat,
+      lng: coordinates.lng,
     })
   }
 
@@ -416,6 +423,16 @@ export function AddressForm({
             </GoogleMap>
           )}
         </div>
+      )}
+      {!hasGoogleMapsKey && (
+        <p className="text-xs text-red-500">
+          Google Maps is required to pin your location before saving address.
+        </p>
+      )}
+      {hasGoogleMapsKey && !hasPinnedCoordinates && (
+        <p className="text-xs text-amber-600">
+          Pin your location on the map. Accurate pin is required for rider navigation.
+        </p>
       )}
 
       <div>
@@ -606,7 +623,12 @@ export function AddressForm({
 
       <button
         type="submit"
-        disabled={isSubmitting || pincodeStatus === 'checking' || pincodeStatus === 'unavailable'}
+        disabled={
+          isSubmitting ||
+          pincodeStatus === 'checking' ||
+          pincodeStatus === 'unavailable' ||
+          !hasPinnedCoordinates
+        }
         className="inline-flex h-12 w-full items-center justify-center rounded-xl bg-green-500 text-sm font-semibold text-white transition-colors hover:bg-green-600 disabled:cursor-not-allowed disabled:opacity-60"
       >
         {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : submitLabel}
