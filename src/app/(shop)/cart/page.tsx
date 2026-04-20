@@ -1,9 +1,9 @@
-'use client'
+﻿'use client'
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
+import { AnimatePresence, m, useReducedMotion } from 'framer-motion'
 import { ArrowRight, Sparkles } from 'lucide-react'
 import { useCart } from '@/hooks/useCart'
 import { useCoupon } from '@/hooks/useCoupon'
@@ -20,6 +20,7 @@ import {
 } from '@/components/cart'
 import { cartSavings } from '@/components/cart/cart.utils'
 import { DEFAULT_DELIVERY_FEE, FREE_DELIVERY_THRESHOLD, PLATFORM_FEE } from '@/lib/constants'
+import { WEEKLY_CUSTOMERS } from '@/constants/social-proof'
 import { formatINR } from '@/lib/utils'
 
 export default function CartPage() {
@@ -31,7 +32,7 @@ export default function CartPage() {
     const { coupon, applyCoupon, removeCoupon, isValidating } = useCoupon(subtotal)
 
     useEffect(() => {
-        document.title = 'My Cart — Grolin Grocery'
+        document.title = 'My Basket - Grolin Grocery'
     }, [])
 
     if (isLoading) {
@@ -80,28 +81,31 @@ export default function CartPage() {
 
     return (
         <>
-            <div className="page-enter px-4 py-5 pb-32 sm:px-5 lg:px-6 lg:pb-8">
+            <div className="page-enter px-4 py-5 pb-28 sm:px-5 lg:px-6 lg:pb-8">
                 <section className="mb-5">
-                    <div className="flex flex-col gap-3 border-b border-[rgba(17,24,39,0.06)] pb-4 lg:flex-row lg:items-end lg:justify-between">
+                    <div className="flex flex-col gap-4 border-b border-[color:var(--shop-border)] pb-4 lg:flex-row lg:items-end lg:justify-between">
                         <div>
-                            <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#98A0A8]">Basket review</p>
-                            <h1 className="mt-2 text-[32px] font-bold leading-none tracking-[-0.05em] text-[#16202A] sm:text-[36px]">
-                                Your Cart
-                            </h1>
-                            <p className="mt-2 text-sm text-[#68737E]">
-                                {lineItemCount} item{lineItemCount !== 1 ? 's' : ''} ready for checkout
+                            <div className="flex flex-wrap items-center gap-3">
+                                <h1 className="text-[32px] font-extrabold leading-none tracking-[-0.03em] text-[color:var(--shop-ink)] sm:text-[36px]">
+                                    My Basket
+                                </h1>
+                                <span className="inline-flex rounded-full bg-[color:var(--shop-primary)] px-3 py-1 text-xs font-semibold text-white">
+                                    {lineItemCount} item{lineItemCount !== 1 ? 's' : ''}
+                                </span>
+                                {totalSavings > 0 && (
+                                    <m.div
+                                        initial={reduceMotion ? false : { opacity: 0, y: -16 }}
+                                        animate={reduceMotion ? undefined : { opacity: 1, y: 0 }}
+                                        className="inline-flex items-center gap-2 rounded-full bg-[color:var(--shop-action-soft)] px-4 py-2 text-sm font-semibold text-[color:var(--shop-action)]"
+                                    >
+                                        <Sparkles className="h-4 w-4" />
+                                        Saving {formatINR(totalSavings)}
+                                    </m.div>
+                                )}
+                            </div>
+                            <p className="mt-2 text-sm text-[color:var(--shop-ink-muted)]">
+                                Review your groceries, confirm fees, and head to checkout.
                             </p>
-
-                            {totalSavings > 0 && (
-                                <motion.div
-                                    initial={reduceMotion ? false : { opacity: 0, y: -16 }}
-                                animate={reduceMotion ? undefined : { opacity: 1, y: 0 }}
-                                className="mt-3 inline-flex items-center gap-2 rounded-full bg-[rgba(22,101,52,0.08)] px-4 py-2 text-sm font-semibold text-[#166534]"
-                            >
-                                <Sparkles className="h-4 w-4" />
-                                You&apos;re saving {formatINR(totalSavings)} on this order! 🎉
-                            </motion.div>
-                        )}
                         </div>
 
                         <Link
@@ -118,11 +122,11 @@ export default function CartPage() {
                     <div className="space-y-4">
                         <FreeDeliveryBar subtotal={subtotal} threshold={FREE_DELIVERY_THRESHOLD} />
 
-                        <div className="rounded-[22px] border border-white/70 bg-[linear-gradient(180deg,rgba(255,255,255,0.96)_0%,rgba(250,247,241,0.96)_100%)] p-3.5 shadow-[0_14px_28px_rgba(15,23,42,0.05)] lg:hidden">
+                        <div className="rounded-[22px] border border-[color:var(--shop-border)] bg-[color:var(--shop-surface-elevated)] p-4 shadow-[var(--shop-shadow-level-1)] lg:hidden">
                             {renderPromoBlock()}
                         </div>
 
-                        <section className="rounded-[22px] border border-white/70 bg-[linear-gradient(180deg,rgba(255,255,255,0.96)_0%,rgba(250,247,241,0.96)_100%)] p-3.5 shadow-[0_14px_28px_rgba(15,23,42,0.05)] lg:hidden">
+                        <section className="rounded-[22px] border border-[color:var(--shop-border)] bg-[color:var(--shop-surface-elevated)] p-3.5 shadow-[var(--shop-shadow-level-1)] lg:hidden">
                             <div className="space-y-3">
                                 <AnimatePresence initial={false}>
                                     {cart.items.map((item) => (
@@ -137,7 +141,7 @@ export default function CartPage() {
                             </div>
                         </section>
 
-                        <section className="hidden rounded-[22px] border border-white/70 bg-[linear-gradient(180deg,rgba(255,255,255,0.96)_0%,rgba(250,247,241,0.96)_100%)] p-3.5 shadow-[0_14px_28px_rgba(15,23,42,0.05)] lg:block">
+                        <section className="hidden rounded-[22px] border border-[color:var(--shop-border)] bg-[color:var(--shop-surface-elevated)] p-3.5 shadow-[var(--shop-shadow-level-1)] lg:block">
                             <div className="space-y-4">
                                 <AnimatePresence initial={false}>
                                     {cart.items.map((item) => (
@@ -157,6 +161,10 @@ export default function CartPage() {
                             cartProductIds={cartProductIds}
                         />
 
+                        <div className="rounded-[12px] border border-[color:color-mix(in srgb, var(--shop-primary) 15%, transparent)] bg-[color:var(--shop-primary-soft)] px-4 py-3 text-[13px] font-medium text-[color:var(--shop-primary)] lg:hidden">
+                            🛒 {WEEKLY_CUSTOMERS} Kolkata families ordered on Grolin this week
+                        </div>
+
                         <CartSummary
                             className="lg:hidden"
                             subtotal={subtotal}
@@ -172,6 +180,9 @@ export default function CartPage() {
 
                     <aside className="hidden lg:block">
                         <div className="sticky top-[104px] space-y-4">
+                            <div className="rounded-[12px] border border-[color:color-mix(in srgb, var(--shop-primary) 15%, transparent)] bg-[color:var(--shop-primary-soft)] px-4 py-3 text-[13px] font-medium text-[color:var(--shop-primary)]">
+                                🛒 {WEEKLY_CUSTOMERS} Kolkata families ordered on Grolin this week
+                            </div>
                             <CartSummary
                                 subtotal={subtotal}
                                 deliveryFee={deliveryFee}
@@ -181,7 +192,7 @@ export default function CartPage() {
                                 total={total}
                                 itemCount={lineItemCount}
                                 onCheckout={() => router.push('/checkout')}
-                                ctaLabel={`🔒 Secure Checkout • ${formatINR(total)}`}
+                                ctaLabel={'Proceed to Checkout \u2192'}
                                 promoContent={renderPromoBlock()}
                                 freeDeliveryThreshold={FREE_DELIVERY_THRESHOLD}
                             />
@@ -211,3 +222,5 @@ export default function CartPage() {
         </>
     )
 }
+
+

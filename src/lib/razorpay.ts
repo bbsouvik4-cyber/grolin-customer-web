@@ -70,7 +70,7 @@ export function openRazorpayCheckout(config: {
                     name: config.userName,
                     email: config.userEmail,
                 },
-                theme: { color: '#22C55E' },
+                theme: { color: 'rgb(104 72 198)' },
                 handler: async (response) => {
                     try {
                         await config.onSuccess(response)

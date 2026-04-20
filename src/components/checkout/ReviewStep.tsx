@@ -5,6 +5,7 @@ import { CreditCard, MapPin, ShieldCheck } from 'lucide-react'
 import { formatINR } from '@/lib/utils'
 import { PriceBreakdown } from './PriceBreakdown'
 import { TrustBadge } from './TrustBadge'
+import { getImageUrl } from '@/lib/media'
 import type { Address } from '@/types/address.types'
 import type { CartItem } from '@/types/cart.types'
 import type { PaymentMethod } from '@/types/order.types'
@@ -62,7 +63,7 @@ export function ReviewStep({
                             >
                                 <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-xl bg-white">
                                     <Image
-                                        src={item.image || itemData.thumbnail_url || '/placeholder-product.svg'}
+                                        src={getImageUrl(item.image || itemData.thumbnail_url)}
                                         alt={item.name}
                                         fill
                                         className="object-contain p-1.5"

@@ -1,25 +1,25 @@
 'use client'
 
-import { Suspense, useState, useEffect } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
-import { Loader2, ArrowLeft, RefreshCw } from 'lucide-react'
+import { ArrowLeft, Loader2, RefreshCw } from 'lucide-react'
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp'
 import { authService } from '@/services/auth.service'
-import { useAuthStore } from '@/store/auth.store'
 import { OTP_RESEND_SECONDS } from '@/lib/constants'
 import { formatPhone } from '@/lib/utils'
+import { useAuthStore } from '@/store/auth.store'
 import { toast } from 'sonner'
 
 export default function OtpPage() {
     return (
-        <Suspense fallback={<OtpPageSkeleton />}>
-            <OtpContent />
+        <Suspense>
+            <OtpForm />
         </Suspense>
     )
 }
 
-function OtpContent() {
+function OtpForm() {
     const router = useRouter()
     const searchParams = useSearchParams()
     const phone = searchParams.get('phone') ?? ''
@@ -32,7 +32,6 @@ function OtpContent() {
     const [countdown, setCountdown] = useState(OTP_RESEND_SECONDS)
     const [canResend, setCanResend] = useState(false)
 
-    // Countdown timer
     useEffect(() => {
         if (countdown <= 0) {
             setCanResend(true)
@@ -42,16 +41,19 @@ function OtpContent() {
         return () => clearTimeout(t)
     }, [countdown])
 
-    // Auto-submit when 6 digits entered — pass value directly to avoid stale closure
     useEffect(() => {
         if (otp.length === 6) {
-            // Small delay to ensure state is fully committed
             const timer = setTimeout(() => verifyOtp(otp), 100)
             return () => clearTimeout(timer)
         }
         return undefined
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [otp])
+
+    useEffect(() => {
+        if (!phone) {
+            router.replace(`/login?redirect=${encodeURIComponent(redirect)}`)
+        }
+    }, [phone, redirect, router])
 
     const verifyOtp = async (otpValue?: string) => {
         const code = otpValue ?? otp
@@ -92,101 +94,88 @@ function OtpContent() {
     }
 
     if (!phone) {
-        router.push('/login')
         return null
     }
 
     return (
-        <div className="space-y-6">
-            <div>
+        <div className="space-y-7">
+            <div className="space-y-4">
                 <Link
                     href={`/login?redirect=${encodeURIComponent(redirect)}`}
-                    className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-700 transition-colors mb-4"
+                    className="inline-flex items-center gap-1.5 text-[13px] font-semibold tracking-tight text-[color:var(--shop-ink-muted)] transition-colors hover:text-[color:var(--shop-ink)]"
                 >
-                    <ArrowLeft className="w-4 h-4" />
+                    <ArrowLeft className="h-4 w-4" />
                     Change number
                 </Link>
-                <h1 className="text-2xl font-bold text-gray-900">Verify OTP</h1>
-                <p className="text-sm text-gray-500 mt-1.5">
-                    We sent a 6-digit code to{' '}
-                    <span className="font-semibold text-gray-900">{formatPhone(phone)}</span>
-                </p>
+
+                <div className="space-y-2">
+                    <h1 className="text-[32px] font-extrabold leading-[1.06] tracking-[-0.03em] text-[color:var(--shop-ink)] sm:text-[36px]">
+                        Verify OTP
+                    </h1>
+                    <p className="text-[15px] leading-7 text-[color:var(--shop-ink-muted)]">
+                        We sent a 6-digit code to{' '}
+                        <span className="font-semibold text-[color:var(--shop-ink)]">{formatPhone(phone)}</span>
+                    </p>
+                </div>
             </div>
 
-            {/* OTP Input */}
-            <div className="flex justify-center py-2">
-                <InputOTP
-                    maxLength={6}
-                    value={otp}
-                    onChange={setOtp}
-                    disabled={isVerifying}
-                >
-                    <InputOTPGroup className="gap-2.5">
-                        {Array.from({ length: 6 }).map((_, i) => (
-                            <InputOTPSlot
-                                key={i}
-                                index={i}
-                                className="h-14 w-12 rounded-xl border-2 border-[color:var(--shop-border)] bg-gray-50 text-lg font-bold transition-all data-[active=true]:border-[color:var(--shop-primary)] data-[active=true]:bg-white data-[active=true]:shadow-[0_0_0_3px_rgba(34,197,94,0.1)]"
-                            />
-                        ))}
+            <div className="flex justify-center py-1">
+                <InputOTP maxLength={6} value={otp} onChange={setOtp} disabled={isVerifying}>
+                    <InputOTPGroup className="gap-2 sm:gap-2.5">
+                        {Array.from({ length: 6 }).map((_, i) => {
+                            const isFilled = Boolean(otp[i])
+                            const isActiveSlot = otp.length < 6 && i === otp.length
+
+                            return (
+                                <InputOTPSlot
+                                    key={i}
+                                    index={i}
+                                    className={[
+                                        'h-[52px] w-[52px] rounded-[12px] border-[1.5px] text-lg font-bold text-[color:var(--shop-ink)] transition-all',
+                                        isFilled || isActiveSlot
+                                            ? 'border-[color:var(--shop-primary)] bg-[color:var(--shop-primary-soft)]'
+                                            : 'border-[color:var(--shop-border)] bg-[color:var(--shop-canvas)]',
+                                    ].join(' ')}
+                                />
+                            )
+                        })}
                     </InputOTPGroup>
                 </InputOTP>
             </div>
 
-            {/* Verifying state */}
             {isVerifying && (
-                <div className="flex items-center justify-center gap-2 text-sm text-gray-500 py-1">
+                <div className="flex items-center justify-center gap-2 py-1 text-[14px] font-medium text-[color:var(--shop-ink-muted)]">
                     <Loader2 className="h-4 w-4 animate-spin text-[color:var(--shop-primary)]" />
                     Verifying...
                 </div>
             )}
 
-            {/* Error */}
             {error && (
                 <div className="text-center">
-                    <p className="text-sm text-red-500 bg-red-50 rounded-lg py-2.5 px-4 inline-block">
+                    <p className="inline-block rounded-full bg-red-50 px-4 py-2 text-[13px] font-medium text-[color:var(--shop-danger)]">
                         {error}
                     </p>
                 </div>
             )}
 
-            {/* Resend */}
-            <div className="text-center text-sm">
+            <div className="text-center text-[14px]">
                 {canResend ? (
                     <button
                         onClick={resendOtp}
-                        className="inline-flex items-center gap-1.5 font-semibold text-[color:var(--shop-primary)] transition-colors hover:text-[color:var(--shop-primary-hover)]"
+                        className="inline-flex items-center gap-1.5 font-semibold tracking-tight text-[color:var(--shop-primary)] transition-colors hover:text-[color:var(--shop-primary-hover)]"
                     >
-                        <RefreshCw className="w-3.5 h-3.5" />
+                        <RefreshCw className="h-3.5 w-3.5" />
                         Resend OTP
                     </button>
                 ) : (
-                    <span className="text-gray-400">
+                    <span className="font-medium text-[color:var(--shop-ink-muted)]">
                         Resend code in{' '}
-                        <span className="text-gray-600 font-semibold tabular-nums">
+                        <span className="font-semibold tabular-nums text-[color:var(--shop-ink-muted)]">
                             0:{String(countdown).padStart(2, '0')}
                         </span>
                     </span>
                 )}
             </div>
-        </div>
-    )
-}
-
-function OtpPageSkeleton() {
-    return (
-        <div className="space-y-6">
-            <div className="space-y-3">
-                <div className="h-5 w-28 rounded bg-gray-100" />
-                <div className="h-8 w-40 rounded bg-gray-100" />
-                <div className="h-4 w-64 rounded bg-gray-100" />
-            </div>
-            <div className="flex justify-center gap-2.5">
-                {Array.from({ length: 6 }).map((_, index) => (
-                    <div key={index} className="h-14 w-12 rounded-xl bg-gray-100" />
-                ))}
-            </div>
-            <div className="mx-auto h-4 w-40 rounded bg-gray-100" />
         </div>
     )
 }

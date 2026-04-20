@@ -1,125 +1,360 @@
 'use client'
 
-import { forwardRef, useImperativeHandle } from 'react'
+import { useCallback, useEffect, useState, useRef, useMemo } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import useEmblaCarousel from 'embla-carousel-react'
+import { ChevronLeft, ChevronRight, Grid2x2, ArrowRight } from 'lucide-react'
+import { m, useInView, useReducedMotion, useMotionValue, useTransform, useSpring } from 'framer-motion'
+import { getCategoryImageSrc } from '@/lib/media'
 import type { Category } from '@/types/product.types'
+import { cn } from '@/lib/utils'
 
-export type CategoryRowHandle = {
-    scrollPrev: () => void
-    scrollNext: () => void
-}
+/* ══════════════════════════════  CONSTANTS  ═══════════════════════ */
 
 type CategoryRowProps = {
-    categories: Category[]
+  categories: Category[]
+  selectedCategoryId?: string
 }
 
-type CategoryVisualStyle = {
-    tint: string
-    fallback: string
-    emoji: string
+const GRADIENT_PALETTE = [
+  { colors: ['#F6F1FF', '#EDE4FF'], accent: '#7B59E6', glow: 'rgba(123,89,230,0.20)' },
+  { colors: ['#EEF9F2', '#DDF5E6'], accent: '#16945E', glow: 'rgba(22,148,94,0.18)' },
+  { colors: ['#EFF6FF', '#DBEAFE'], accent: '#3B82F6', glow: 'rgba(59,130,246,0.18)' },
+  { colors: ['#FFF7ED', '#FED7AA'], accent: '#EA580C', glow: 'rgba(234,88,12,0.16)' },
+  { colors: ['#FEF2F2', '#FECACA'], accent: '#DC2626', glow: 'rgba(220,38,38,0.16)' },
+  { colors: ['#FDF2F8', '#FBCFE8'], accent: '#DB2777', glow: 'rgba(219,39,119,0.16)' },
+  { colors: ['#ECFEFF', '#CFFAFE'], accent: '#0891B2', glow: 'rgba(8,145,178,0.16)' },
+  { colors: ['#FEFCE8', '#FEF08A'], accent: '#CA8A04', glow: 'rgba(202,138,4,0.16)' },
+] as const
+
+function hashName(value: string) {
+  return Array.from(value).reduce((acc, char) => acc + char.charCodeAt(0), 0)
 }
 
-const DEFAULT_STYLE: CategoryVisualStyle = {
-    tint: '#EAE7E0',
-    fallback: 'linear-gradient(145deg, #EFEAE2, #E5DED2)',
-    emoji: '🛒',
+function getMonogram(name: string) {
+  const words = name.split(/[\s,&-]+/).map((p) => p.trim()).filter(Boolean)
+  if (words.length === 0) return 'G'
+  if (words.length === 1) return words[0]!.slice(0, 1).toUpperCase()
+  return `${words[0]!.slice(0, 1)}${words[1]!.slice(0, 1)}`.toUpperCase()
 }
 
-const CATEGORY_STYLES: Record<string, CategoryVisualStyle> = {
-    fruits: { tint: '#E4F1E5', fallback: 'linear-gradient(145deg, #EAF5E8, #DDEAD9)', emoji: '🍎' },
-    vegetables: { tint: '#E3F0E6', fallback: 'linear-gradient(145deg, #E9F6EC, #DBE8DF)', emoji: '🥬' },
-    dairy: { tint: '#E8EEF8', fallback: 'linear-gradient(145deg, #EEF2F8, #DCE5F4)', emoji: '🥛' },
-    eggs: { tint: '#ECEEF5', fallback: 'linear-gradient(145deg, #F0F1F6, #E1E4EC)', emoji: '🥚' },
-    bakery: { tint: '#EFE7D9', fallback: 'linear-gradient(145deg, #F3EBDD, #E7DCC7)', emoji: '🍞' },
-    bread: { tint: '#EFE7D9', fallback: 'linear-gradient(145deg, #F3EBDD, #E7DCC7)', emoji: '🥖' },
-    beverages: { tint: '#E8EDF0', fallback: 'linear-gradient(145deg, #EFF2F4, #E0E6EA)', emoji: '🥤' },
-    drinks: { tint: '#E8EDF0', fallback: 'linear-gradient(145deg, #EFF2F4, #E0E6EA)', emoji: '🥤' },
-    snacks: { tint: '#F2E8D9', fallback: 'linear-gradient(145deg, #F5ECDD, #EADCC5)', emoji: '🍪' },
-    chips: { tint: '#F2E8D9', fallback: 'linear-gradient(145deg, #F5ECDD, #EADCC5)', emoji: '🍟' },
-    meat: { tint: '#EEE3DE', fallback: 'linear-gradient(145deg, #F2E8E4, #E7D8D2)', emoji: '🥩' },
-    fish: { tint: '#E6EDF1', fallback: 'linear-gradient(145deg, #EEF3F6, #DAE4EA)', emoji: '🐟' },
-    grains: { tint: '#EFE8DE', fallback: 'linear-gradient(145deg, #F5EEE5, #E8DED0)', emoji: '🌾' },
+function getCategoryStyle(name: string) {
+  const palette = GRADIENT_PALETTE[hashName(name.toLowerCase()) % GRADIENT_PALETTE.length]!
+  return {
+    gradient: `linear-gradient(145deg, ${palette.colors[0]}, ${palette.colors[1]})`,
+    monogram: getMonogram(name),
+    accentColor: palette.accent,
+    glow: palette.glow,
+  }
 }
 
-const SLIDE_WIDTH_CLASS = 'w-[156px] sm:w-[174px] lg:w-[calc((100%-64px)/5)]'
-const SLIDE_HEIGHT_CLASS = 'h-[188px] sm:h-[204px] lg:h-[214px]'
+/* ══════════  CATEGORY CARD MEDIA (Inner Image)  ═══════════════════ */
+function CategoryCardMedia({ category, index }: { category: Category; index: number }) {
+  const [imageFailed, setImageFailed] = useState(false)
+  const style = getCategoryStyle(category.name)
+  const imageSrc = getCategoryImageSrc(category)
+  const showImage = Boolean(imageSrc) && !imageFailed
 
-function getCategoryStyle(name: string): CategoryVisualStyle {
-    const key = name.toLowerCase().split(/[\s,&-]+/).find(Boolean) ?? 'default'
-    return CATEGORY_STYLES[key] ?? DEFAULT_STYLE
+  useEffect(() => { setImageFailed(false) }, [imageSrc])
+
+  return (
+    <div
+      className="relative mx-auto flex h-[100px] w-full max-w-[120px] items-center justify-center overflow-hidden rounded-[20px] border border-white/80 shadow-[0_8px_32px_rgba(0,0,0,0.06)] transition-all duration-500 group-hover:scale-[1.06] group-hover:shadow-[0_16px_40px_rgba(0,0,0,0.10)] sm:h-[108px] sm:max-w-[128px] lg:h-[120px] lg:max-w-[140px] xl:h-[128px] xl:max-w-[148px]"
+      style={{
+        backgroundImage: `${style.gradient}, linear-gradient(180deg, rgba(255,255,255,0.97), rgba(255,255,255,0.97))`,
+      }}
+    >
+      {showImage ? (
+        <Image
+          src={imageSrc!} alt={category.name} fill unoptimized
+          priority={index < 8} onError={() => setImageFailed(true)}
+          className="object-contain p-3.5 transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.12] sm:p-4 lg:p-4.5"
+          sizes="(min-width: 1280px) 148px, (min-width: 1024px) 140px, (min-width: 640px) 128px, 120px"
+        />
+      ) : (
+        <span className="text-[18px] font-black tracking-[0.14em] text-[color:var(--shop-primary)] lg:text-[22px]">{style.monogram}</span>
+      )}
+
+      {/* 3D glass reflection layer */}
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-white/30 via-transparent to-transparent opacity-60" />
+
+      {/* Hover light sweep */}
+      <div className="pointer-events-none absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/40 to-transparent opacity-0 transition-all duration-[800ms] group-hover:translate-x-full group-hover:opacity-100" />
+    </div>
+  )
 }
 
-export const CategoryRow = forwardRef<CategoryRowHandle, CategoryRowProps>(function CategoryRow(
-    { categories },
-    ref,
-) {
-    const [emblaRef, emblaApi] = useEmblaCarousel({
-        loop: false,
-        align: 'start',
-        slidesToScroll: 1,
-        containScroll: 'trimSnaps',
-        dragFree: false,
-    })
+/* ══════════  SLIDER ARROW  ════════════════════════════════════════ */
+function SliderArrow({ direction, onClick, hidden }: { direction: 'left' | 'right'; onClick: () => void; hidden?: boolean }) {
+  return (
+    <button
+      type="button" onClick={onClick}
+      aria-label={direction === 'left' ? 'Scroll categories left' : 'Scroll categories right'}
+      className={cn(
+        'absolute top-[44%] z-10 hidden h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full text-white shadow-[0_12px_36px_rgba(110,73,216,0.30)] transition-all duration-300 hover:scale-[1.08] lg:flex',
+        'bg-gradient-to-br from-[#6E49D8] to-[#523AA3] hover:from-[#7B59E6] hover:to-[#5E44B5]',
+        direction === 'left' ? 'left-2' : 'right-2',
+        hidden && 'pointer-events-none opacity-0',
+      )}
+    >
+      {direction === 'left' ? <ChevronLeft className="h-5 w-5" /> : <ChevronRight className="h-5 w-5" />}
+    </button>
+  )
+}
 
-    useImperativeHandle(ref, () => ({
-        scrollPrev: () => emblaApi?.scrollPrev(),
-        scrollNext: () => emblaApi?.scrollNext(),
-    }))
+/* ══════════  3D TILT CARD WRAPPER  ════════════════════════════════ */
+function TiltCard({ children, className, isActive }: { children: React.ReactNode; className?: string; isActive: boolean }) {
+  const ref = useRef<HTMLDivElement>(null)
+  const rotateX = useMotionValue(0)
+  const rotateY = useMotionValue(0)
+  const smoothX = useSpring(rotateX, { stiffness: 150, damping: 20 })
+  const smoothY = useSpring(rotateY, { stiffness: 150, damping: 20 })
 
-    return (
-        <div className="overflow-hidden" ref={emblaRef}>
-            <div className="-ml-3 flex sm:-ml-4">
-                {categories.map((category, index) => {
-                    const style = getCategoryStyle(category.name)
+  const handleMouse = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    const el = ref.current
+    if (!el) return
+    const rect = el.getBoundingClientRect()
+    const x = (e.clientX - rect.left) / rect.width - 0.5
+    const y = (e.clientY - rect.top) / rect.height - 0.5
+    rotateX.set(y * -8)
+    rotateY.set(x * 10)
+  }, [rotateX, rotateY])
 
-                    return (
-                        <div key={category.id} className={`shrink-0 pl-3 sm:pl-4 ${SLIDE_WIDTH_CLASS}`}>
-                            <Link
-                                href={`/categories/${category.id}`}
-                                aria-label={`Browse ${category.name}`}
-                                className={`group relative block overflow-hidden rounded-[24px] border border-white/70 shadow-[0_10px_26px_rgba(15,23,42,0.08)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_18px_30px_rgba(15,23,42,0.12)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#22C55E] focus-visible:ring-offset-2 focus-visible:ring-offset-[#ECE7DE] ${SLIDE_HEIGHT_CLASS}`}
-                            >
-                                <div
-                                    className="absolute inset-0"
-                                    style={{
-                                        background: style.fallback,
-                                    }}
-                                />
+  const handleLeave = useCallback(() => {
+    rotateX.set(0)
+    rotateY.set(0)
+  }, [rotateX, rotateY])
 
-                                {category.image_url ? (
-                                    <Image
-                                        src={category.image_url}
-                                        alt={category.name}
-                                        fill
-                                        priority={index < 5}
-                                        className="object-cover transition-transform duration-500 group-hover:scale-[1.04]"
-                                        sizes="(max-width: 640px) 156px, (max-width: 1024px) 174px, 20vw"
-                                    />
-                                ) : (
-                                    <div
-                                        className="absolute inset-0 flex items-center justify-center"
-                                        style={{ backgroundColor: style.tint }}
-                                    >
-                                        <span className="text-[48px] leading-none sm:text-[54px]">{style.emoji}</span>
-                                    </div>
-                                )}
+  return (
+    <m.div
+      ref={ref}
+      onMouseMove={handleMouse}
+      onMouseLeave={handleLeave}
+      style={{
+        rotateX: smoothX,
+        rotateY: smoothY,
+        transformPerspective: 800,
+        transformStyle: 'preserve-3d',
+      }}
+      className={className}
+    >
+      {children}
+    </m.div>
+  )
+}
 
-                                <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(9,16,23,0.02)_0%,rgba(9,16,23,0.08)_55%,rgba(9,16,23,0.20)_100%)]" />
+/* ══════════  ANIMATED CATEGORY CARD  ══════════════════════════════ */
+function AnimatedCategoryCard({
+  category, index, isActive, inView, prefersReduced,
+}: {
+  category: Category; index: number; isActive: boolean
+  inView: boolean; prefersReduced: boolean | null
+}) {
+  const style = getCategoryStyle(category.name)
 
-                                <div className="absolute inset-x-3 bottom-3 sm:inset-x-4">
-                                    <span className="frosted-panel flex min-h-[42px] items-center justify-center rounded-full border border-white/70 bg-white/86 px-3.5 py-2 text-center shadow-[0_10px_20px_rgba(15,23,42,0.16)]">
-                                        <span className="line-clamp-2 text-[12px] font-semibold leading-tight text-[#16202A] sm:text-[13px]">
-                                            {category.name}
-                                        </span>
-                                    </span>
-                                </div>
-                            </Link>
-                        </div>
-                    )
-                })}
+  return (
+    <Link
+      key={category.id}
+      href={`/categories/${category.id}`}
+      aria-label={`Browse ${category.name}`}
+      className="group w-[128px] shrink-0 sm:w-[136px] lg:w-[160px] xl:w-[168px]"
+    >
+      <m.div
+        initial={prefersReduced ? false : { opacity: 0, y: 28, scale: 0.90, rotateX: 12 }}
+        animate={inView ? { opacity: 1, y: 0, scale: 1, rotateX: 0 } : {}}
+        transition={{
+          type: 'spring', stiffness: 140, damping: 18,
+          delay: Math.min(index * 0.06, 0.5),
+        }}
+      >
+        <TiltCard isActive={isActive} className="relative">
+          {/* Card body */}
+          <div
+            className={cn(
+              'relative overflow-hidden rounded-[24px] border px-3.5 py-5 transition-all duration-500 lg:px-4 lg:py-6',
+              isActive
+                ? 'border-[color:var(--shop-primary)] bg-white shadow-[0_20px_60px_rgba(110,73,216,0.18)]'
+                : 'border-[color:var(--shop-border)] bg-white/95 shadow-[0_8px_32px_rgba(0,0,0,0.06)] hover:shadow-[0_20px_50px_rgba(110,73,216,0.12)]',
+            )}
+          >
+            {/* Active glow ring */}
+            {isActive && (
+              <div className="absolute -inset-[1px] -z-10 rounded-[25px] overflow-hidden">
+                <div
+                  className="absolute inset-0 rounded-[25px]"
+                  style={{
+                    background: `conic-gradient(from 0deg, ${style.accentColor}, #A78BFA, #FBBF24, #A78BFA, ${style.accentColor})`,
+                    animation: 'spin-slow 4s linear infinite',
+                  }}
+                />
+              </div>
+            )}
+
+            {/* Ambient glow behind the card on active */}
+            {isActive && (
+              <div
+                className="pointer-events-none absolute -inset-4 -z-20 rounded-[40px] blur-[24px] opacity-50"
+                style={{ background: style.glow }}
+              />
+            )}
+
+            {/* Top accent line */}
+            <div
+              className={cn(
+                'absolute left-4 right-4 top-0 h-[2px] rounded-full transition-all duration-500',
+                isActive ? 'opacity-100' : 'opacity-0 group-hover:opacity-60',
+              )}
+              style={{
+                background: `linear-gradient(90deg, transparent, ${style.accentColor}, transparent)`,
+              }}
+            />
+
+            {/* Active floating dot */}
+            {isActive && (
+              <m.div
+                layoutId="category-active-dot"
+                className="absolute -top-1.5 left-1/2 -translate-x-1/2"
+                transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+              >
+                <span className="relative flex h-3 w-3">
+                  <span
+                    className="absolute inline-flex h-full w-full animate-ping rounded-full opacity-50"
+                    style={{ background: style.accentColor }}
+                  />
+                  <span
+                    className="relative inline-flex h-3 w-3 rounded-full shadow-md"
+                    style={{ background: style.accentColor }}
+                  />
+                </span>
+              </m.div>
+            )}
+
+            <CategoryCardMedia category={category} index={index} />
+
+            {/* Category name with accent underline on active */}
+            <div className="mt-3.5 text-center lg:mt-4">
+              <p
+                className={cn(
+                  'line-clamp-2 text-[14px] font-bold leading-[1.3] tracking-[-0.01em] transition-colors duration-300 lg:text-[15px]',
+                  isActive
+                    ? 'text-[color:var(--shop-primary)]'
+                    : 'text-[color:var(--shop-ink)] group-hover:text-[color:var(--shop-primary)]',
+                )}
+              >
+                {category.name}
+              </p>
+              {isActive && (
+                <m.div
+                  layoutId="category-underline"
+                  className="mx-auto mt-1.5 h-[2px] w-8 rounded-full"
+                  style={{ background: style.accentColor }}
+                  transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+                />
+              )}
             </div>
+
+            {/* Hover: "Browse →" micro CTA */}
+            <div className="mt-2.5 flex items-center justify-center gap-1 opacity-0 transition-all duration-300 group-hover:opacity-100">
+              <span className="text-[10px] font-bold uppercase tracking-[0.15em] text-[color:var(--shop-primary)]">Browse</span>
+              <ArrowRight className="h-2.5 w-2.5 text-[color:var(--shop-primary)] transition-transform duration-300 group-hover:translate-x-0.5" />
+            </div>
+          </div>
+        </TiltCard>
+      </m.div>
+    </Link>
+  )
+}
+
+/* ══════════════════════  MAIN EXPORT  ═════════════════════════════ */
+export function CategoryRow({ categories, selectedCategoryId }: CategoryRowProps) {
+  const [emblaRef, emblaApi] = useEmblaCarousel({ dragFree: true, containScroll: 'trimSnaps' })
+  const [canScrollLeft, setCanScrollLeft] = useState(false)
+  const [canScrollRight, setCanScrollRight] = useState(false)
+  const sectionRef = useRef<HTMLDivElement>(null)
+  const inView = useInView(sectionRef, { once: true, margin: '-20px' })
+  const prefersReduced = useReducedMotion()
+
+  const updateScrollState = useCallback(() => {
+    if (!emblaApi) return
+    setCanScrollLeft(emblaApi.canScrollPrev())
+    setCanScrollRight(emblaApi.canScrollNext())
+  }, [emblaApi])
+
+  useEffect(() => {
+    if (!emblaApi) return
+    updateScrollState()
+    emblaApi.on('select', updateScrollState)
+    emblaApi.on('reInit', updateScrollState)
+    emblaApi.on('scroll', updateScrollState)
+    return () => {
+      emblaApi.off('select', updateScrollState)
+      emblaApi.off('reInit', updateScrollState)
+      emblaApi.off('scroll', updateScrollState)
+    }
+  }, [emblaApi, updateScrollState])
+
+  return (
+    <div ref={sectionRef} className="relative" aria-label="Category quick navigation">
+      <SliderArrow direction="left" onClick={() => emblaApi?.scrollPrev()} hidden={!canScrollLeft} />
+      <SliderArrow direction="right" onClick={() => emblaApi?.scrollNext()} hidden={!canScrollRight} />
+
+      <div className="overflow-hidden pb-2" ref={emblaRef}>
+        <div className="flex select-none touch-pan-y items-start gap-4 px-4 sm:px-1 lg:gap-5">
+          {categories.map((category, index) => (
+            <AnimatedCategoryCard
+              key={category.id} category={category} index={index}
+              isActive={selectedCategoryId === category.id}
+              inView={inView} prefersReduced={prefersReduced}
+            />
+          ))}
+
+          {/* "All Categories" cinematic card */}
+          <Link href="/categories" aria-label="Browse all categories" className="group w-[128px] shrink-0 sm:w-[136px] lg:w-[160px] xl:w-[168px]">
+            <m.div
+              initial={prefersReduced ? false : { opacity: 0, y: 28, scale: 0.90 }}
+              animate={inView ? { opacity: 1, y: 0, scale: 1 } : {}}
+              transition={{ type: 'spring', stiffness: 140, damping: 18, delay: Math.min(categories.length * 0.06, 0.6) }}
+            >
+              <div className="relative overflow-hidden rounded-[24px] border border-[color:var(--shop-primary)]/40 bg-gradient-to-br from-[#F6F1FF] via-white to-[#EDE4FF] px-3.5 py-5 shadow-[0_8px_32px_rgba(110,73,216,0.08)] transition-all duration-500 hover:shadow-[0_20px_50px_rgba(110,73,216,0.18)] hover:border-[color:var(--shop-primary)] lg:px-4 lg:py-6">
+                {/* Animated gradient border */}
+                <div className="absolute -inset-[1px] -z-10 rounded-[25px] overflow-hidden opacity-0 transition-opacity duration-500 group-hover:opacity-100">
+                  <div
+                    className="absolute inset-0"
+                    style={{
+                      background: 'conic-gradient(from 0deg, #6E49D8, #A78BFA, #FBBF24, #A78BFA, #6E49D8)',
+                      animation: 'spin-slow 4s linear infinite',
+                    }}
+                  />
+                </div>
+
+                <div className="mx-auto flex h-[100px] w-full max-w-[120px] items-center justify-center rounded-[20px] border border-[color:var(--shop-primary)]/20 bg-white shadow-[0_8px_24px_rgba(110,73,216,0.08)] transition-all duration-500 group-hover:shadow-[0_12px_32px_rgba(110,73,216,0.15)] sm:h-[108px] sm:max-w-[128px] lg:h-[120px] lg:max-w-[140px] xl:h-[128px] xl:max-w-[148px]">
+                  <m.div
+                    animate={{ rotate: [0, 90, 180, 270, 360] }}
+                    transition={{ duration: 20, repeat: Infinity, ease: 'linear' }}
+                  >
+                    <Grid2x2 className="h-8 w-8 text-[color:var(--shop-primary)] lg:h-9 lg:w-9" />
+                  </m.div>
+                </div>
+                <div className="mt-3.5 text-center lg:mt-4">
+                  <p className="text-[14px] font-bold text-[color:var(--shop-primary)] lg:text-[15px]">All Categories</p>
+                </div>
+                <div className="mt-2.5 flex items-center justify-center gap-1 opacity-0 transition-all duration-300 group-hover:opacity-100">
+                  <span className="text-[10px] font-bold uppercase tracking-[0.15em] text-[color:var(--shop-primary)]">View All</span>
+                  <ArrowRight className="h-2.5 w-2.5 text-[color:var(--shop-primary)]" />
+                </div>
+              </div>
+            </m.div>
+          </Link>
         </div>
-    )
-})
+      </div>
+
+      <style dangerouslySetInnerHTML={{ __html: `
+        @keyframes spin-slow {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+      `}} />
+    </div>
+  )
+}

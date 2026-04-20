@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { ShoppingBag } from 'lucide-react'
+import { Check, ShoppingBag } from 'lucide-react'
 
 export default function AuthLayout({
     children,
@@ -7,73 +7,54 @@ export default function AuthLayout({
     children: React.ReactNode
 }) {
     return (
-        <div className="min-h-screen flex bg-[var(--shop-page-gradient)]">
-            {/* Left — Branding panel (hidden on mobile) */}
-            <div className="relative hidden overflow-hidden lg:flex lg:w-[480px] shop-hero-surface">
-                {/* Decorative circles */}
-                <div className="absolute -top-20 -left-20 w-80 h-80 bg-white/10 rounded-full" />
-                <div className="absolute -bottom-32 -right-16 w-96 h-96 bg-white/5 rounded-full" />
-                <div className="absolute top-1/3 right-8 w-40 h-40 bg-white/5 rounded-full" />
+        <div className="min-h-screen bg-[var(--shop-page-gradient)] lg:flex">
+            <div className="shop-hero-surface grain-overlay relative hidden min-h-screen overflow-hidden lg:flex lg:w-1/2">
+                <div className="absolute bottom-10 right-12 h-[240px] w-[240px] rounded-full bg-white/[0.08]" />
+                <div className="absolute bottom-24 right-40 h-[180px] w-[180px] rounded-full bg-white/[0.06]" />
+                <div className="absolute bottom-44 right-8 h-[120px] w-[120px] rounded-full bg-white/[0.04]" />
+                <div className="absolute bottom-2 right-60 h-[160px] w-[160px] rounded-full bg-white/[0.05]" />
 
-                <div className="relative z-10 flex flex-col justify-between p-12 text-white w-full">
+                <div className="relative z-10 flex w-full flex-col justify-between px-12 py-14 text-white xl:px-16 xl:py-16">
                     <div>
                         <Link href="/" className="inline-flex items-center gap-3">
-                            <div className="w-11 h-11 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
-                                <ShoppingBag className="w-6 h-6 text-white" />
+                            <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-white/20 bg-white/[0.14] backdrop-blur-sm">
+                                <ShoppingBag className="h-6 w-6 text-white" />
                             </div>
                             <span className="text-2xl font-bold tracking-tight">Grolin</span>
                         </Link>
                     </div>
 
-                    <div className="space-y-6">
-                        <h2 className="text-4xl font-extrabold leading-tight">
-                            Fresh groceries,<br />
-                            delivered in<br />
-                            <span className="text-white/80">minutes.</span>
-                        </h2>
-                        <p className="text-white/70 text-lg max-w-xs leading-relaxed">
-                            Order from 1000+ products. Delivered fresh to your doorstep.
-                        </p>
-                        <div className="flex gap-6 text-sm text-white/60">
-                            <div>
-                                <p className="text-2xl font-bold text-white">1000+</p>
-                                <p>Products</p>
-                            </div>
-                            <div className="w-px bg-white/20" />
-                            <div>
-                                <p className="text-2xl font-bold text-white">30 min</p>
-                                <p>Delivery</p>
-                            </div>
-                            <div className="w-px bg-white/20" />
-                            <div>
-                                <p className="text-2xl font-bold text-white">₹0</p>
-                                <p>Above ₹299</p>
-                            </div>
+                    <div className="max-w-md space-y-8">
+                        <div className="space-y-4">
+                            <p className="text-sm font-semibold uppercase tracking-[0.24em] text-white/65">
+                                Everyday Grocery
+                            </p>
+                            <h1 className="text-5xl font-extrabold leading-[1.05] tracking-[-0.025em]">
+                                Your neighbourhood grocery, delivered fresh
+                            </h1>
+                        </div>
+
+                        <div className="space-y-3.5 text-base text-white/88">
+                            {['30 min delivery', 'Fresh guarantee', 'Easy returns'].map((item) => (
+                                <div key={item} className="flex items-center gap-3">
+                                    <span className="flex h-8 w-8 items-center justify-center rounded-full border border-white/20 bg-white/[0.12]">
+                                        <Check className="h-4 w-4" />
+                                    </span>
+                                    <span>{item}</span>
+                                </div>
+                            ))}
                         </div>
                     </div>
 
-                    <p className="text-xs text-white/40">
-                        © {new Date().getFullYear()} Grolin Grocery. All rights reserved.
+                    <p className="text-xs text-white/50">
+                        Copyright {new Date().getFullYear()} Grolin Grocery. All rights reserved.
                     </p>
                 </div>
             </div>
 
-            {/* Right — Auth form */}
-            <div className="flex flex-1 items-center justify-center bg-transparent p-6">
-                <div className="w-full max-w-[420px]">
-                    {/* Mobile-only brand header */}
-                    <div className="lg:hidden text-center mb-8">
-                        <Link href="/" className="inline-flex items-center gap-2.5">
-                            <div className="w-10 h-10 bg-brand-500 rounded-xl flex items-center justify-center">
-                                <ShoppingBag className="w-5 h-5 text-white" />
-                            </div>
-                            <span className="text-2xl font-bold text-gray-900">Grolin</span>
-                        </Link>
-                        <p className="text-sm text-gray-500 mt-2">Fresh groceries, delivered fast</p>
-                    </div>
-
-                    {/* Auth card */}
-                    <div className="rounded-[28px] border border-[color:var(--shop-border)] bg-[linear-gradient(180deg,rgba(255,255,255,0.96)_0%,rgba(248,245,239,0.98)_100%)] p-8 shadow-[var(--shop-shadow-soft)]">
+            <div className="flex min-h-screen flex-1 items-center justify-center px-4 py-6 sm:px-6 lg:w-1/2 lg:px-10 lg:py-10">
+                <div className="w-full max-w-[520px]">
+                    <div className="rounded-[24px] bg-[color:var(--shop-surface)] p-6 shadow-[var(--shop-shadow-level-3)] sm:p-10">
                         {children}
                     </div>
 

@@ -104,8 +104,8 @@ export function ProductReviewsSection({ productId, initialData }: ProductReviews
 
     if (isLoading && !hasReviews) {
         return (
-            <section className="border-t border-gray-100 pt-5">
-                <h3 className="mb-4 text-sm font-bold text-gray-900">Customer Reviews</h3>
+            <section className="border-t border-[color:var(--shop-border)] pt-5">
+                <h3 className="mb-4 text-sm font-bold text-[color:var(--shop-ink)]">Customer Reviews</h3>
                 <div className="grid gap-4 lg:grid-cols-[220px_1fr]">
                     <div className="skeleton-shimmer h-[160px] rounded-2xl" />
                     <div className="space-y-3">
@@ -123,10 +123,10 @@ export function ProductReviewsSection({ productId, initialData }: ProductReviews
             <h3 className="mb-4 text-sm font-bold text-gray-900">Customer Reviews</h3>
 
             {!hasReviews && !isFetching ? (
-                <div className="rounded-2xl border border-gray-100 bg-white px-4 py-8 text-center">
+                <div className="rounded-2xl border border-[color:var(--shop-border)] bg-[color:var(--shop-surface)] px-4 py-8 text-center">
                     <Star className="mx-auto mb-2 h-8 w-8 text-amber-300" strokeWidth={1.5} />
-                    <p className="text-sm font-semibold text-gray-700">No reviews yet</p>
-                    <p className="mt-1 text-xs text-gray-500">
+                    <p className="text-sm font-semibold text-[color:var(--shop-ink)]">No reviews yet</p>
+                    <p className="mt-1 text-xs text-[color:var(--shop-ink-muted)]">
                         {canReview
                             ? 'You purchased this product — share your experience!'
                             : 'Reviews from verified buyers will appear here.'}
@@ -134,25 +134,25 @@ export function ProductReviewsSection({ productId, initialData }: ProductReviews
                 </div>
             ) : (
                 <div className="grid gap-5 lg:grid-cols-[220px_1fr]">
-                    <div className="rounded-2xl border border-gray-100 bg-white p-4 text-center">
-                        <p className="text-[40px] font-black leading-none text-gray-900">
+                    <div className="rounded-2xl border border-[color:var(--shop-border)] bg-[color:var(--shop-surface)] p-4 text-center">
+                        <p className="text-[40px] font-black leading-none text-[color:var(--shop-ink)]">
                             {averageRating.toFixed(1)}
                         </p>
                         <RatingStars value={averageRating} size="md" className="mt-2 justify-center" />
-                        <p className="mt-2 text-xs text-gray-500">{totalLoaded} reviews</p>
+                        <p className="mt-2 text-xs text-[color:var(--shop-ink-muted)]">{totalLoaded} reviews</p>
                     </div>
 
                     <div className="space-y-2">
                         {breakdown.map((entry) => (
                             <div key={entry.star} className="flex items-center gap-2.5">
-                                <span className="w-5 text-xs font-semibold text-gray-600">{entry.star}★</span>
-                                <div className="h-2 flex-1 overflow-hidden rounded-full bg-gray-100">
+                                <span className="w-5 text-xs font-semibold text-[color:var(--shop-ink-muted)]">{entry.star}★</span>
+                                <div className="h-2 flex-1 overflow-hidden rounded-full bg-[color:var(--shop-surface-subtle)]">
                                     <div
                                         className="h-full rounded-full bg-amber-400 transition-all"
                                         style={{ width: `${entry.percent}%` }}
                                     />
                                 </div>
-                                <span className="w-8 text-right text-xs text-gray-500">{entry.percent}%</span>
+                                <span className="w-8 text-right text-xs text-[color:var(--shop-ink-muted)]">{entry.percent}%</span>
                             </div>
                         ))}
                     </div>
@@ -160,28 +160,28 @@ export function ProductReviewsSection({ productId, initialData }: ProductReviews
             )}
 
             {hasReviews && (
-                <div className="mt-4 max-h-[420px] overflow-y-auto rounded-2xl border border-gray-100 bg-white px-4">
+                <div className="mt-4 max-h-[420px] overflow-y-auto rounded-2xl border border-[color:var(--shop-border)] bg-[color:var(--shop-surface)] px-4">
                     {allReviews.map((review) => {
                         const reviewerName = review.user_name?.trim() || 'Guest'
                         const initial = reviewerName[0]?.toUpperCase() ?? 'G'
 
                         return (
-                            <article key={review.id} className="border-b border-gray-50 py-4 last:border-b-0">
+                            <article key={review.id} className="border-b border-[color:var(--shop-border)] py-4 last:border-b-0">
                                 <div className="mb-2 flex items-start gap-3">
                                     <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-green-100 text-sm font-bold text-green-700">
                                         {initial}
                                     </div>
                                     <div className="min-w-0 flex-1">
                                         <div className="flex flex-wrap items-center gap-2">
-                                            <p className="text-sm font-semibold text-gray-900">{reviewerName}</p>
-                                            <span className="text-xs text-gray-400">
+                                            <p className="text-sm font-semibold text-[color:var(--shop-ink)]">{reviewerName}</p>
+                                            <span className="text-xs text-[color:var(--shop-ink-faint)]">
                                                 {review.created_at ? formatDate(review.created_at) : ''}
                                             </span>
                                         </div>
                                         <RatingStars value={Number(review.rating ?? 0)} size="sm" className="mt-1" />
                                     </div>
                                 </div>
-                                <p className="text-sm leading-relaxed text-gray-600">
+                                <p className="text-sm leading-relaxed text-[color:var(--shop-ink-muted)]">
                                     {review.comment?.trim() || 'No written comment.'}
                                 </p>
                             </article>
@@ -201,7 +201,7 @@ export function ProductReviewsSection({ productId, initialData }: ProductReviews
                     type="button"
                     onClick={() => setPage((prev) => prev + 1)}
                     disabled={isFetching}
-                    className="mt-4 rounded-full border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-700 transition-colors hover:border-gray-300 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-60"
+                    className="mt-4 rounded-full border border-[color:var(--shop-border)] bg-[color:var(--shop-surface)] px-4 py-2 text-sm font-semibold text-[color:var(--shop-ink)] transition-colors hover:border-[color:var(--shop-primary)] hover:text-[color:var(--shop-primary)] disabled:cursor-not-allowed disabled:opacity-60"
                 >
                     {isFetching ? 'Loading...' : 'Show more'}
                 </button>
@@ -211,14 +211,14 @@ export function ProductReviewsSection({ productId, initialData }: ProductReviews
                 <button
                     type="button"
                     onClick={() => setShowReviewForm(true)}
-                    className="mt-4 text-sm font-semibold text-green-600 hover:text-green-700 hover:underline"
+                    className="mt-4 text-sm font-semibold text-[color:var(--shop-primary)] hover:text-[color:var(--shop-primary-hover)] hover:underline"
                 >
                     ✍️ Write a Review
                 </button>
             )}
 
             {user && eligibility?.alreadyReviewed && (
-                <p className="mt-3 text-xs font-medium text-gray-400">
+                <p className="mt-3 text-xs font-medium text-[color:var(--shop-ink-faint)]">
                     ✓ You&apos;ve already reviewed this product.
                 </p>
             )}

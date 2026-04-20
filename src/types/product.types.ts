@@ -1,4 +1,4 @@
-export interface Product {
+﻿export interface Product {
     id: string
     name: string
     slug: string
@@ -14,6 +14,7 @@ export interface Product {
     thumbnail_url: string | null
     is_featured: boolean
     total_sold: number
+    weekly_sales?: number | null
     max_order_qty: number | null
     tags: string[]
     ingredients?: string | null
@@ -69,3 +70,4 @@ export function enrichProduct(p: Product): ProductWithHelpers {
         isLowStock: p.stock_quantity > 0 && p.stock_quantity < 10,
     }
 }
+

@@ -40,7 +40,7 @@ export function HeaderThemeToggle() {
     >
       <SunMedium
         className={cn(
-          'absolute h-[18px] w-[18px] text-[#D9911D] transition-all duration-300',
+          'absolute h-[18px] w-[18px] text-[color:var(--shop-accent)] transition-all duration-300',
           mounted && mode === 'dark' ? 'scale-0 rotate-90 opacity-0' : 'scale-100 rotate-0 opacity-100',
         )}
       />

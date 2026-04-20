@@ -13,6 +13,7 @@ interface StickySummaryBarProps {
     onCtaClick: () => void
     disabled?: boolean
     loading?: boolean
+    securityNote?: string
     children: ReactNode
 }
 
@@ -23,50 +24,53 @@ export function StickySummaryBar({
     onCtaClick,
     disabled = false,
     loading = false,
+    securityNote,
     children,
 }: StickySummaryBarProps) {
     const [open, setOpen] = useState(false)
 
     return (
         <>
-            <div className="fixed inset-x-0 bottom-0 z-[220] border-t border-slate-200 bg-white/95 px-4 py-3 shadow-[0_-16px_32px_rgba(15,23,42,0.08)] backdrop-blur lg:hidden">
-                <div className="mx-auto flex max-w-2xl items-center gap-3">
-                    <button
-                        type="button"
-                        onClick={() => setOpen(true)}
-                        className="flex flex-1 items-center justify-between rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-left"
-                    >
-                        <div>
-                            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-400">
-                                Order total
+            <div className="fixed inset-x-0 bottom-0 z-[220] border-t border-[color:var(--shop-border)] bg-white px-4 py-3 shadow-[0_-12px_24px_rgba(15,23,42,0.08)] lg:hidden">
+                <div className="mx-auto max-w-2xl">
+                    <div className="flex items-center justify-between gap-3">
+                        <button
+                            type="button"
+                            onClick={() => setOpen(true)}
+                            className="flex min-w-0 flex-1 items-center justify-between rounded-[14px] border border-[color:var(--shop-border)] bg-[color:var(--shop-surface-subtle)] px-3.5 py-3 text-left"
+                        >
+                            <p className="truncate text-sm font-semibold text-[color:var(--shop-ink)]">
+                                {`${formatINR(total)} \u00B7 ${itemCount} item${itemCount !== 1 ? 's' : ''}`}
                             </p>
-                            <p className="mt-1 text-base font-semibold text-slate-950">
-                                {formatINR(total)}
-                            </p>
-                            <p className="mt-1 text-xs text-slate-500">{itemCount} items · View breakdown</p>
-                        </div>
-                        <ChevronUp className="h-4 w-4 text-slate-400" />
-                    </button>
+                            <ChevronUp className="ml-3 h-4 w-4 shrink-0 text-[color:var(--shop-ink-muted)]" />
+                        </button>
 
-                    <div className="w-[48%] min-w-[164px]">
-                        <PrimaryCheckoutButton
-                            label={ctaLabel}
-                            loading={loading}
-                            disabled={disabled}
-                            onClick={onCtaClick}
-                            className="h-12 text-xs sm:text-sm"
-                        />
+                        <div className="w-[172px] shrink-0 sm:w-[220px]">
+                            <PrimaryCheckoutButton
+                                label={ctaLabel}
+                                loading={loading}
+                                disabled={disabled}
+                                onClick={onCtaClick}
+                                className="h-11 rounded-[14px] bg-[color:var(--shop-action)] px-4 text-[13px] shadow-none hover:bg-[color:var(--shop-action-hover)]"
+                            />
+                        </div>
                     </div>
+
+                    {securityNote && (
+                        <p className="mt-2 text-center text-[11px] font-medium text-[color:var(--shop-trust)]">
+                            {securityNote}
+                        </p>
+                    )}
                 </div>
             </div>
 
             <Sheet open={open} onOpenChange={setOpen}>
                 <SheetContent
                     side="bottom"
-                    className="rounded-t-[28px] border-slate-200 bg-slate-50 px-4 pb-6 pt-5"
+                    className="rounded-t-[28px] border-[color:var(--shop-border)] bg-[color:var(--shop-surface-subtle)] px-4 pb-6 pt-5"
                 >
                     <SheetHeader className="mb-4">
-                        <SheetTitle className="text-left text-slate-950">Order breakdown</SheetTitle>
+                        <SheetTitle className="text-left text-[color:var(--shop-ink)]">Order summary</SheetTitle>
                     </SheetHeader>
                     <div className="space-y-4">{children}</div>
                 </SheetContent>

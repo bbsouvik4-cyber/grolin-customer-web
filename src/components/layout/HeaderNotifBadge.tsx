@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { Bell } from 'lucide-react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { m, AnimatePresence } from 'framer-motion'
 import { useNotifStore } from '@/store/notif.store'
 
 export function HeaderNotifBadge() {
@@ -17,7 +17,7 @@ export function HeaderNotifBadge() {
             <Bell className="h-[20px] w-[20px] text-[color:var(--shop-primary)]" strokeWidth={1.6} />
             <AnimatePresence>
                 {unreadCount > 0 && (
-                    <motion.span
+                    <m.span
                         initial={{ scale: 0 }}
                         animate={{ scale: 1 }}
                         exit={{ scale: 0 }}
@@ -25,7 +25,7 @@ export function HeaderNotifBadge() {
                         className="absolute -right-0.5 -top-0.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white"
                     >
                         {unreadCount > 9 ? '9+' : unreadCount}
-                    </motion.span>
+                    </m.span>
                 )}
             </AnimatePresence>
         </Link>

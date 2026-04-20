@@ -1,20 +1,24 @@
-import Link from 'next/link'
 import { Wallet } from 'lucide-react'
 
-export function WalletEmpty() {
+interface WalletEmptyProps {
+    onAddMoney: () => void
+}
+
+export function WalletEmpty({ onAddMoney }: WalletEmptyProps) {
     return (
-        <div className="flex flex-col items-center justify-center py-16 text-center">
-            <div className="mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-gray-100">
-                <Wallet className="h-10 w-10 text-gray-300" strokeWidth={1.5} />
+        <div className="flex flex-col items-center justify-center rounded-[28px] border border-[color:var(--shop-border)] bg-[color:var(--shop-surface-elevated)] px-6 py-16 text-center shadow-[var(--shop-shadow-level-1)]">
+            <div className="mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-[color:var(--shop-surface-subtle)]">
+                <Wallet className="h-8 w-8 text-[color:var(--shop-ink-faint)]" strokeWidth={1.5} />
             </div>
-            <h3 className="text-lg font-bold text-gray-900">No transactions yet</h3>
-            <p className="mt-1 text-sm text-gray-500">Add money to start using your wallet</p>
-            <Link
-                href="/wallet/add-money"
-                className="mt-5 inline-flex h-10 items-center rounded-xl bg-green-500 px-6 text-sm font-semibold text-white hover:bg-green-600"
+            <h3 className="text-lg font-bold text-[color:var(--shop-ink)]">No transactions yet</h3>
+            <p className="mt-2 max-w-[280px] text-sm text-[color:var(--shop-ink-muted)]">Add money to get started</p>
+            <button
+                type="button"
+                onClick={onAddMoney}
+                className="mt-6 inline-flex h-11 items-center justify-center rounded-[12px] bg-[color:var(--shop-action)] px-6 text-sm font-semibold text-white shadow-[var(--shop-shadow-level-1)] transition-colors hover:bg-[color:var(--shop-action-hover)]"
             >
                 Add Money
-            </Link>
+            </button>
         </div>
     )
 }

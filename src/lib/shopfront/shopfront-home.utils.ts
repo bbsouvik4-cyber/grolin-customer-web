@@ -1,6 +1,6 @@
 import type { Banner } from '@/types/banner.types'
 import type { Category, Product } from '@/types/product.types'
-import { SHOPFRONT_CATEGORY_PREFERENCES } from './shopfront-content'
+import { SHOPFRONT_CATEGORY_PREFERENCES, type CategoryIconKey } from './shopfront-content'
 
 function normalize(value: string) {
   return value.trim().toLowerCase()
@@ -15,13 +15,43 @@ function uniqueById<T extends { id: string }>(items: T[]) {
   })
 }
 
-export function getTopLevelActiveCategories(categories: Category[]) {
-  return [...categories]
-    .filter((category) => category.is_active && !category.parent_id)
-    .sort((a, b) => a.sort_order - b.sort_order || b.product_count - a.product_count)
+function getCategoryPresentation(category: Category): Pick<HomepageCategoryNavItem, 'navLabel' | 'iconKey'> {
+  const haystack = `${category.name} ${category.description ?? ''}`.toLowerCase()
+  const preference = SHOPFRONT_CATEGORY_PREFERENCES.find((pref) =>
+    pref.keywords.some((keyword) => haystack.includes(keyword)),
+  )
+
+  if (preference) {
+    return {
+      navLabel: preference.label,
+      iconKey: preference.icon,
+    }
+  }
+
+  return {
+    navLabel: category.name,
+    iconKey: 'default',
+  }
 }
 
-export function getHomepageCategoryNav(categories: Category[]) {
+export type HomepageCategoryNavItem = Category & {
+  navLabel: string
+  iconKey: CategoryIconKey | 'default'
+}
+
+export function getTopLevelActiveCategories(categories: Category[]) {
+  const activeCategories = [...categories].filter((category) => category.is_active)
+  const topLevelCategories = activeCategories.filter((category) => !category.parent_id)
+  const source = topLevelCategories.length > 0 ? topLevelCategories : activeCategories
+
+  return source.sort((a, b) => a.sort_order - b.sort_order || b.product_count - a.product_count)
+}
+
+export function getHomepageCategoryNav(
+  categories: Category[],
+  limit = 12,
+  selectedId?: string,
+): HomepageCategoryNavItem[] {
   const active = getTopLevelActiveCategories(categories)
   const used = new Set<string>()
 
@@ -40,18 +70,41 @@ export function getHomepageCategoryNav(categories: Category[]) {
 
   const fallback = active
     .filter((category) => !used.has(category.id))
-    .slice(0, Math.max(0, 6 - matched.length))
+    .slice(0, Math.max(0, limit - matched.length))
     .map((category) => ({
       ...category,
       navLabel: category.name,
-      iconKey: 'pantry' as const,
+      iconKey: 'default' as const,
     }))
 
-  return [...matched, ...fallback].slice(0, 6)
+  const result = [...matched, ...fallback].slice(0, limit)
+
+  if (!selectedId || result.some((category) => category.id === selectedId)) {
+    return result
+  }
+
+  const selectedCategory = active.find((category) => category.id === selectedId)
+  if (!selectedCategory) {
+    return result
+  }
+
+  const selectedCategoryNav = {
+    ...selectedCategory,
+    ...getCategoryPresentation(selectedCategory),
+  }
+
+  if (result.length < limit) {
+    return [...result, selectedCategoryNav]
+  }
+
+  return [...result.slice(0, limit - 1), selectedCategoryNav]
 }
 
-export function getHomepageCategoryGrid(categories: Category[], limit = 6) {
-  return getTopLevelActiveCategories(categories).slice(0, limit)
+export function getHomepageCategoryGrid(categories: Category[], limit = 6, excludeIds: string[] = []) {
+  const excluded = new Set(excludeIds)
+  return getTopLevelActiveCategories(categories)
+    .filter((category) => !excluded.has(category.id))
+    .slice(0, limit)
 }
 
 export function getTrendingProducts(input: {

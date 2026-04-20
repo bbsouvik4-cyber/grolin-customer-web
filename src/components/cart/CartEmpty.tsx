@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useQuery } from '@tanstack/react-query'
-import { motion, useReducedMotion } from 'framer-motion'
+import { m, useReducedMotion } from 'framer-motion'
 import { ArrowRight, ShoppingBag } from 'lucide-react'
 import { ProductSectionRow } from '@/components/home/ProductSectionRow'
 import { categoriesService } from '@/services/categories.service'
@@ -25,7 +25,7 @@ export function CartEmpty() {
         <div className="space-y-8">
             <div className="overflow-hidden rounded-[36px] border border-white/70 bg-[linear-gradient(135deg,rgba(255,255,255,0.98)_0%,rgba(247,243,255,0.94)_46%,rgba(236,248,240,0.95)_100%)] px-6 py-12 shadow-[0_24px_50px_rgba(15,23,42,0.08)] sm:px-10 sm:py-16">
                 <div className="mx-auto max-w-[620px] text-center">
-                    <motion.div
+                    <m.div
                         animate={
                             reduceMotion
                                 ? undefined
@@ -43,31 +43,31 @@ export function CartEmpty() {
                                       ease: 'easeInOut',
                                   }
                         }
-                        className="mx-auto mb-6 flex h-28 w-28 items-center justify-center rounded-[32px] bg-[linear-gradient(180deg,#F6FAF7_0%,#EAF3ED_100%)] shadow-[0_14px_28px_rgba(15,23,42,0.05)]"
+                        className="mx-auto mb-6 flex h-24 w-24 items-center justify-center rounded-[32px] bg-[color:var(--shop-surface-subtle)] shadow-[0_14px_28px_rgba(15,23,42,0.05)]"
                     >
-                        <ShoppingBag className="h-14 w-14 text-[color:var(--shop-primary)]/55" strokeWidth={1.5} />
-                    </motion.div>
+                        <ShoppingBag className="h-8 w-8 text-[color:var(--shop-ink-faint)]" strokeWidth={1.5} />
+                    </m.div>
 
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.20em] text-[#98A0A8]">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.20em] text-[color:var(--shop-ink-faint)]">
                         Basket waiting
                     </p>
-                    <h2 className="mt-3 text-[34px] font-bold tracking-[-0.04em] text-[#16202A]">
-                        Your cart is empty
+                    <h2 className="mt-3 text-[34px] font-bold tracking-[-0.04em] text-[color:var(--shop-ink)]">
+                        Your basket is empty
                     </h2>
-                    <p className="mt-3 text-sm leading-7 text-[#68737E] sm:text-[15px]">
+                    <p className="mt-3 text-sm leading-7 text-[color:var(--shop-ink-muted)] sm:text-[15px]">
                         Build a better basket with fresh produce, pantry staples, premium grocery picks, and ready-to-cook essentials before checkout.
                     </p>
 
                     <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
                         <Link
-                            href="/products"
-                            className="inline-flex h-12 items-center rounded-full bg-[color:var(--shop-primary)] px-8 text-sm font-semibold text-white shadow-[0_14px_28px_rgba(104,72,198,0.18)] transition-colors hover:bg-[color:var(--shop-primary-hover)]"
+                            href="/categories"
+                            className="inline-flex h-12 items-center rounded-full bg-[color:var(--shop-action)] px-8 text-sm font-semibold text-white shadow-[0_14px_28px_rgba(22,148,94,0.18)] transition-colors hover:bg-[color:var(--shop-action-hover)]"
                         >
                             Start Shopping
                         </Link>
                         <Link
                             href="/products?sort=popular"
-                            className="inline-flex h-12 items-center gap-2 rounded-full border border-white/80 bg-white/86 px-6 text-sm font-semibold text-[#475569] transition-colors hover:text-[color:var(--shop-primary)]"
+                            className="inline-flex h-12 items-center gap-2 rounded-full border border-[color:var(--shop-border)] bg-[color:var(--shop-surface)] px-6 text-sm font-semibold text-[color:var(--shop-ink-muted)] transition-colors hover:text-[color:var(--shop-primary)]"
                         >
                             Explore popular picks
                             <ArrowRight className="h-4 w-4" />
@@ -76,7 +76,7 @@ export function CartEmpty() {
 
                     {categories.length > 0 && (
                         <div className="mt-8">
-                            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#98A0A8]">
+                            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[color:var(--shop-ink-faint)]">
                                 Browse by category
                             </p>
                             <div className="mt-4 flex flex-wrap justify-center gap-2">
@@ -84,7 +84,7 @@ export function CartEmpty() {
                                     <Link
                                         key={category.id}
                                         href={`/products?categoryId=${category.id}`}
-                                        className="rounded-full border border-white/80 bg-white/86 px-4 py-2 text-sm font-medium text-[#475569] transition-colors hover:text-[color:var(--shop-primary)]"
+                                        className="rounded-full border border-[color:var(--shop-border)] bg-[color:var(--shop-surface)] px-4 py-2 text-sm font-medium text-[color:var(--shop-ink-muted)] transition-colors hover:text-[color:var(--shop-primary)]"
                                     >
                                         {category.name}
                                     </Link>
@@ -101,7 +101,7 @@ export function CartEmpty() {
                         title="Popular Picks"
                         subtitle="Jump back in with featured products people reorder most."
                         products={featured}
-                        viewAllHref="/products"
+                        viewAllHref="/categories"
                         containerClassName="w-full"
                     />
                 </div>
@@ -109,3 +109,4 @@ export function CartEmpty() {
         </div>
     )
 }
+

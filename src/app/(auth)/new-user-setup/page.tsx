@@ -48,13 +48,14 @@ export default function NewUserSetupPage() {
                     <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-[var(--shop-seasonal-accent-wash)]">
                         <User className="h-8 w-8 text-[color:var(--shop-primary)]" strokeWidth={1.5} />
                     </div>
-                    <h1 className="text-2xl font-bold text-gray-900">Welcome! 👋</h1>
-                    <p className="mt-1 text-sm text-gray-500">Let&apos;s set up your profile</p>
+                    <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-[color:var(--shop-primary-strong)]">New profile</p>
+                    <h1 className="mt-2 text-[32px] font-extrabold leading-[1.06] tracking-[-0.03em] text-[color:var(--shop-ink)]">Welcome! 👋</h1>
+                    <p className="mt-2 text-[15px] leading-7 text-[color:var(--shop-ink-muted)]">Let&apos;s set up your profile</p>
                 </div>
 
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <div>
-                        <label className="mb-1.5 block text-sm font-medium text-gray-700">
+                        <label className="mb-1.5 block text-[12px] font-bold uppercase tracking-[0.12em] text-[color:var(--shop-ink-muted)]">
                             Your Name *
                         </label>
                         <input
@@ -62,28 +63,28 @@ export default function NewUserSetupPage() {
                             value={name}
                             onChange={(event) => setName(event.target.value)}
                             placeholder="Enter your name"
-                            className="w-full rounded-xl border border-[color:var(--shop-border)] px-4 py-3 text-sm font-medium text-gray-900 placeholder:text-gray-400 focus:border-[color:var(--shop-primary)] focus:outline-none focus:ring-1 focus:ring-[color:var(--shop-primary)]"
+                            className="w-full rounded-xl border border-[color:var(--shop-border)] bg-[color:var(--shop-canvas)] px-4 py-3 text-[15px] font-medium text-[color:var(--shop-ink)] placeholder:text-[color:var(--shop-ink-faint)] focus:border-[color:var(--shop-primary)] focus:outline-none focus:ring-1 focus:ring-[color:var(--shop-primary)]"
                             autoFocus
                         />
                     </div>
 
                     <div>
-                        <label className="mb-1.5 block text-sm font-medium text-gray-700">
-                            Email <span className="text-gray-400">(optional)</span>
+                        <label className="mb-1.5 block text-[12px] font-bold uppercase tracking-[0.12em] text-[color:var(--shop-ink-muted)]">
+                            Email <span className="font-medium normal-case tracking-normal text-[color:var(--shop-ink-faint)]">(optional)</span>
                         </label>
                         <input
                             type="email"
                             value={email}
                             onChange={(event) => setEmail(event.target.value)}
                             placeholder="yourname@example.com"
-                            className="w-full rounded-xl border border-[color:var(--shop-border)] px-4 py-3 text-sm font-medium text-gray-900 placeholder:text-gray-400 focus:border-[color:var(--shop-primary)] focus:outline-none focus:ring-1 focus:ring-[color:var(--shop-primary)]"
+                            className="w-full rounded-xl border border-[color:var(--shop-border)] bg-[color:var(--shop-canvas)] px-4 py-3 text-[15px] font-medium text-[color:var(--shop-ink)] placeholder:text-[color:var(--shop-ink-faint)] focus:border-[color:var(--shop-primary)] focus:outline-none focus:ring-1 focus:ring-[color:var(--shop-primary)]"
                         />
                     </div>
 
                     <button
                         type="submit"
                         disabled={!name.trim() || isSubmitting}
-                        className="flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-[color:var(--shop-primary)] text-base font-semibold text-white transition-colors hover:bg-[color:var(--shop-primary-hover)] disabled:opacity-50"
+                        className="flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-[color:var(--shop-primary)] text-[15px] font-semibold tracking-tight text-white transition-colors hover:bg-[color:var(--shop-primary-hover)] disabled:opacity-50"
                     >
                         {isSubmitting ? <Loader2 className="h-5 w-5 animate-spin" /> : 'Continue →'}
                     </button>

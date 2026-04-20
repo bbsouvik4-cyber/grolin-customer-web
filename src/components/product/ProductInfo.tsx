@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState } from 'react'
 import Link from 'next/link'
@@ -19,6 +19,8 @@ interface ProductInfoProps {
         totalReviews: number
     }
 }
+
+const soldFormatter = new Intl.NumberFormat('en-IN')
 
 const TRUSTED_BUYER_STYLES = [
     'bg-emerald-100 text-emerald-700',
@@ -43,6 +45,8 @@ export function ProductInfo({ product, reviewSummary }: ProductInfoProps) {
         Math.min(product.total_sold, 1200),
         product.stock_quantity > 0 ? 24 : 0,
     )
+    const weeklySales = product.weekly_sales ?? null
+    const showWeeklySales = Boolean(weeklySales && weeklySales > 10)
 
     const handleShopNow = () => {
         addToCart(product.id, 1)
@@ -51,16 +55,16 @@ export function ProductInfo({ product, reviewSummary }: ProductInfoProps) {
 
     return (
         <>
-            <div className="flex items-center gap-2 -mt-1">
+            <div className="-mt-1 flex items-center gap-2">
                 <button
                     type="button"
                     onClick={() => router.back()}
-                    className="flex h-9 w-9 items-center justify-center rounded-full border border-[color:var(--shop-border)] transition-colors hover:bg-gray-50"
+                    className="flex h-9 w-9 items-center justify-center rounded-full border border-[color:var(--shop-border)] transition-colors hover:bg-[color:var(--shop-surface-subtle)]"
                     aria-label="Go back"
                 >
                     <ArrowLeft className="h-4 w-4 text-[color:var(--shop-ink-muted)]" strokeWidth={1.5} />
                 </button>
-                <nav className="flex items-center gap-1 text-xs text-gray-400">
+                <nav className="flex items-center gap-1 text-xs text-[color:var(--shop-ink-faint)]">
                     <Link href="/" className="transition-colors hover:text-[color:var(--shop-primary)]">
                         Home
                     </Link>
@@ -83,15 +87,20 @@ export function ProductInfo({ product, reviewSummary }: ProductInfoProps) {
             </div>
 
             <div>
-                <p className="mb-1.5 text-xs font-medium uppercase tracking-wider text-[color:var(--shop-ink-muted)]">
+                <p className="eyebrow mb-1.5">
                     {product.unit}
                 </p>
                 <h1 className="text-[28px] font-extrabold leading-[1.15] text-[color:var(--shop-ink)] lg:text-[32px]">
                     {product.name}
                 </h1>
+                {showWeeklySales && (
+                    <p className="mt-2 text-[13px] font-medium text-[color:var(--shop-ink-muted)]">
+                        🔥 {soldFormatter.format(weeklySales!)} sold this week
+                    </p>
+                )}
             </div>
 
-            <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-[color:var(--shop-border)] bg-white/80 px-4 py-3">
+            <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-[color:var(--shop-border)] bg-[color:var(--shop-surface)] px-4 py-3">
                 <div className="flex items-center gap-2">
                     <RatingStars value={averageRating} size="sm" className="gap-1" />
                     <span className="text-sm font-semibold text-[color:var(--shop-ink)]">
@@ -124,21 +133,26 @@ export function ProductInfo({ product, reviewSummary }: ProductInfoProps) {
                 </div>
             </div>
 
-            <div className="flex flex-wrap items-baseline gap-3">
-                <span className="text-[28px] font-extrabold text-[color:var(--shop-ink)]">
-                    {formatINR(displayPrice)}
-                </span>
-                {isOnSale && (
-                    <span className="text-lg text-[color:var(--shop-ink-muted)] line-through">
-                        {formatINR(product.price)}
+            <div className="space-y-2">
+                <div className="flex flex-wrap items-baseline gap-3">
+                    <span className="text-[28px] font-extrabold text-[color:var(--shop-ink)]">
+                        {formatINR(displayPrice)}
                     </span>
-                )}
-                {discount && (
-                    <span className="rounded-full bg-[var(--shop-seasonal-accent-wash)] px-3 py-1 text-[13px] font-semibold text-[color:var(--shop-primary)]">
-                        You save {formatINR(product.price - displayPrice)} ({discount}%)
-                    </span>
-                )}
-                <span className="text-xs font-medium text-[color:var(--shop-ink-muted)]">Per {product.unit}</span>
+                    {isOnSale && (
+                        <span className="text-lg text-[color:var(--shop-ink-muted)] line-through">
+                            {formatINR(product.price)}
+                        </span>
+                    )}
+                    {discount && (
+                        <span className="rounded-full bg-[var(--shop-seasonal-accent-wash)] px-3 py-1 text-[13px] font-semibold text-[color:var(--shop-primary)]">
+                            You save {formatINR(product.price - displayPrice)} ({discount}%)
+                        </span>
+                    )}
+                    <span className="text-xs font-medium text-[color:var(--shop-ink-muted)]">Per {product.unit}</span>
+                </div>
+                <p className="text-sm font-medium text-[color:var(--shop-ink-muted)]">
+                    {formatINR(displayPrice)} per 100g
+                </p>
             </div>
 
             <div className="flex items-center gap-2">
@@ -146,9 +160,7 @@ export function ProductInfo({ product, reviewSummary }: ProductInfoProps) {
                     <>
                         <div className="pulse-dot h-2 w-2 rounded-full bg-[color:var(--shop-primary)]" />
                         <span className="text-sm font-medium text-[color:var(--shop-primary)]">
-                            {product.stock_quantity < 10
-                                ? `Only ${product.stock_quantity} left — hurry!`
-                                : 'In Stock'}
+                            {product.stock_quantity < 10 ? `Only ${product.stock_quantity} left - hurry!` : 'In Stock'}
                         </span>
                     </>
                 ) : (
@@ -172,7 +184,7 @@ export function ProductInfo({ product, reviewSummary }: ProductInfoProps) {
                 )}
             </div>
 
-            <div className="grid gap-3 rounded-[24px] bg-[linear-gradient(135deg,#f0fdf4_0%,#ecfccb_100%)] p-4 text-sm text-[color:var(--shop-ink)] sm:grid-cols-3">
+            <div className="grid gap-3 rounded-[24px] bg-[linear-gradient(135deg,color-mix(in_srgb,var(--shop-action-soft)_74%,white)_0%,color-mix(in_srgb,var(--shop-accent)_18%,white)_100%)] p-4 text-sm text-[color:var(--shop-ink)] sm:grid-cols-3">
                 <div className="flex items-center gap-2.5">
                     <Users className="h-4 w-4 text-[color:var(--shop-primary)]" strokeWidth={1.8} />
                     <span>{buyerCount > 999 ? `${(buyerCount / 1000).toFixed(1)}K` : buyerCount}+ bought this season</span>
@@ -190,7 +202,7 @@ export function ProductInfo({ product, reviewSummary }: ProductInfoProps) {
             <TrustRow
                 className="border-t border-[color:var(--shop-border)] pt-5"
                 items={[
-                    { icon: Truck, label: 'Free delivery above ₹299' },
+                    { icon: Truck, label: `Free delivery above ${formatINR(299)}` },
                     { icon: RotateCcw, label: 'Easy 7-day returns' },
                     { icon: Shield, label: 'Freshness guaranteed' },
                 ]}
@@ -202,7 +214,7 @@ export function ProductInfo({ product, reviewSummary }: ProductInfoProps) {
                     <div className="relative">
                         <p
                             className={`text-sm leading-relaxed text-[color:var(--shop-ink-muted)] ${
-                                !descExpanded ? 'line-clamp-3' : ''
+                                !descExpanded ? 'line-clamp-4' : ''
                             }`}
                         >
                             {product.description}
@@ -213,7 +225,7 @@ export function ProductInfo({ product, reviewSummary }: ProductInfoProps) {
                                 onClick={() => setDescExpanded((prev) => !prev)}
                                 className="mt-1 flex items-center gap-0.5 text-xs font-semibold text-[color:var(--shop-primary)] hover:underline"
                             >
-                                {descExpanded ? 'Show less' : 'Read more'}
+                                {descExpanded ? 'Show less' : 'Show more'}
                                 <ChevronDown
                                     className={`h-3 w-3 transition-transform ${descExpanded ? 'rotate-180' : ''}`}
                                     strokeWidth={1.5}
@@ -227,7 +239,10 @@ export function ProductInfo({ product, reviewSummary }: ProductInfoProps) {
             {(product.tags?.length ?? 0) > 0 && (
                 <div className="flex flex-wrap gap-2">
                     {product.tags.map((tag) => (
-                        <span key={tag} className="rounded-full bg-[var(--shop-seasonal-accent-wash)] px-3 py-1 text-xs text-[color:var(--shop-ink-muted)]">
+                        <span
+                            key={tag}
+                            className="rounded-full bg-[var(--shop-seasonal-accent-wash)] px-3 py-1 text-xs text-[color:var(--shop-ink-muted)]"
+                        >
                             {tag}
                         </span>
                     ))}

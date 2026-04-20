@@ -4,14 +4,46 @@ export const ORDER_STATUS_CONFIG: Record<
     OrderStatus,
     { label: string; color: string; bg: string }
 > = {
-    PENDING: { label: 'Order Placed', color: '#F59E0B', bg: '#FFFBEB' },
-    CONFIRMED: { label: 'Confirmed', color: '#3B82F6', bg: '#EFF6FF' },
-    PREPARING: { label: 'Preparing', color: '#8B5CF6', bg: '#F5F3FF' },
-    PACKED: { label: 'Packed', color: '#0EA5E9', bg: '#F0F9FF' },
-    OUT_FOR_DELIVERY: { label: 'Out for Delivery', color: '#F97316', bg: '#FFF7ED' },
-    DELIVERED: { label: 'Delivered', color: '#22C55E', bg: '#F0FDF4' },
-    CANCELLED: { label: 'Cancelled', color: '#EF4444', bg: '#FEF2F2' },
-    REFUNDED: { label: 'Refunded', color: '#6B7280', bg: '#F9FAFB' },
+    PENDING: {
+        label: 'Order Placed',
+        color: 'var(--shop-warning)',
+        bg: 'color-mix(in srgb, var(--shop-accent) 16%, white 84%)',
+    },
+    CONFIRMED: {
+        label: 'Confirmed',
+        color: 'var(--shop-warning)',
+        bg: 'color-mix(in srgb, var(--shop-accent) 16%, white 84%)',
+    },
+    PREPARING: {
+        label: 'Preparing',
+        color: 'var(--shop-warning)',
+        bg: 'color-mix(in srgb, var(--shop-accent) 16%, white 84%)',
+    },
+    PACKED: {
+        label: 'Packed',
+        color: 'var(--shop-warning)',
+        bg: 'color-mix(in srgb, var(--shop-accent) 16%, white 84%)',
+    },
+    OUT_FOR_DELIVERY: {
+        label: 'Out for Delivery',
+        color: 'var(--shop-trust)',
+        bg: 'var(--shop-trust-soft)',
+    },
+    DELIVERED: {
+        label: 'Delivered',
+        color: 'var(--shop-action)',
+        bg: 'var(--shop-action-soft)',
+    },
+    CANCELLED: {
+        label: 'Cancelled',
+        color: 'var(--shop-danger)',
+        bg: 'color-mix(in srgb, var(--shop-danger) 10%, white 90%)',
+    },
+    REFUNDED: {
+        label: 'Refunded',
+        color: 'var(--shop-ink-muted)',
+        bg: 'color-mix(in srgb, var(--shop-border) 55%, white 45%)',
+    },
 } as const
 
 export const QUERY_KEYS = {

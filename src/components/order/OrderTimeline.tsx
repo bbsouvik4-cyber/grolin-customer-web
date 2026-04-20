@@ -35,38 +35,47 @@ export function OrderTimeline({ currentStatus, events }: OrderTimelineProps) {
 
     if (currentStatus === 'CANCELLED') {
         return (
-            <div className="rounded-xl border border-red-100 bg-red-50 px-4 py-3">
-                <p className="text-sm font-semibold text-red-600">Order Cancelled</p>
+            <div className="rounded-[16px] border border-[color:var(--shop-border)] bg-[color:color-mix(in_srgb,var(--shop-danger)_8%,white_92%)] px-4 py-3">
+                <p className="text-sm font-semibold text-[color:var(--shop-danger)]">Order Cancelled</p>
             </div>
         )
     }
 
     return (
         <div className="space-y-0">
-            {ALL_STEPS.map((step, i) => {
-                const isComplete = i <= currentIdx
-                const isCurrent = i === currentIdx
+            {ALL_STEPS.map((step, index) => {
+                const isComplete = index < currentIdx
+                const isCurrent = index === currentIdx
                 const event = events.find((entry) => entry.status === step)
-                const isLast = i === ALL_STEPS.length - 1
+                const isLast = index === ALL_STEPS.length - 1
 
                 return (
                     <div key={step} className="flex gap-3">
                         <div className="flex flex-col items-center">
-                            <div
-                                className={cn(
-                                    'flex h-7 w-7 items-center justify-center rounded-full',
-                                    isComplete && 'bg-green-500 text-white',
-                                    isCurrent && 'ring-4 ring-green-100',
-                                    !isComplete && 'border-2 border-gray-200 bg-white',
-                                )}
-                            >
-                                {isComplete && <Check className="h-3.5 w-3.5" strokeWidth={2.5} />}
+                            <div className="relative flex h-7 w-7 items-center justify-center">
+                                {isCurrent ? (
+                                    <span className="absolute inset-0 rounded-full bg-[color:var(--shop-action-soft)] animate-pulse" />
+                                ) : null}
+                                <div
+                                    className={cn(
+                                        'relative z-10 flex h-7 w-7 items-center justify-center rounded-full border',
+                                        isComplete && 'border-[color:var(--shop-action)] bg-[color:var(--shop-action)] text-white',
+                                        isCurrent && 'border-[color:var(--shop-action)] bg-[color:var(--shop-action)] text-white',
+                                        !isComplete && !isCurrent && 'border-[color:var(--shop-border)] bg-white text-[color:var(--shop-ink-faint)]',
+                                    )}
+                                >
+                                    {isComplete || isCurrent ? (
+                                        <Check className="h-3.5 w-3.5" strokeWidth={2.5} />
+                                    ) : (
+                                        <span className="h-2 w-2 rounded-full bg-[color:var(--shop-border-strong)]" />
+                                    )}
+                                </div>
                             </div>
                             {!isLast && (
                                 <div
                                     className={cn(
-                                        'min-h-[24px] w-0.5 flex-1',
-                                        isComplete ? 'bg-green-500' : 'bg-gray-200',
+                                        'min-h-[28px] w-0.5 flex-1',
+                                        index < currentIdx ? 'bg-[color:var(--shop-action)]' : 'bg-[color:var(--shop-border)]',
                                     )}
                                 />
                             )}
@@ -76,16 +85,16 @@ export function OrderTimeline({ currentStatus, events }: OrderTimelineProps) {
                             <p
                                 className={cn(
                                     'text-sm font-medium',
-                                    isComplete ? 'text-gray-900' : 'text-gray-400',
+                                    isComplete || isCurrent
+                                        ? 'text-[color:var(--shop-ink)]'
+                                        : 'text-[color:var(--shop-ink-faint)]',
                                 )}
                             >
                                 {STEP_LABELS[step] || step}
                             </p>
-                            {event?.timestamp && (
-                                <p className="mt-0.5 text-xs text-gray-400">
-                                    {formatDateTime(event.timestamp)}
-                                </p>
-                            )}
+                            <p className="mt-0.5 text-xs text-[color:var(--shop-ink-muted)]">
+                                {event?.timestamp ? formatDateTime(event.timestamp) : 'Awaiting update'}
+                            </p>
                         </div>
                     </div>
                 )

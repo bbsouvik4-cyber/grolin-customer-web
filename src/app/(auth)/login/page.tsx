@@ -5,7 +5,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { Loader2, Phone, ArrowRight, Shield, Truck, Clock, Sparkles } from 'lucide-react'
+import { ArrowRight, Loader2 } from 'lucide-react'
 import { authService } from '@/services/auth.service'
 import { toast } from 'sonner'
 import { phoneSchema } from '@/lib/validations'
@@ -15,13 +15,13 @@ type FormData = z.infer<typeof schema>
 
 export default function LoginPage() {
     return (
-        <Suspense fallback={<LoginPageSkeleton />}>
-            <LoginContent />
+        <Suspense>
+            <LoginForm />
         </Suspense>
     )
 }
 
-function LoginContent() {
+function LoginForm() {
     const router = useRouter()
     const searchParams = useSearchParams()
 
@@ -38,9 +38,7 @@ function LoginContent() {
             const fullPhone = `+91${phone}`
             await authService.sendOtp(fullPhone)
             const redirect = searchParams.get('redirect') ?? '/'
-            router.push(
-                `/otp?phone=${encodeURIComponent(fullPhone)}&redirect=${encodeURIComponent(redirect)}`,
-            )
+            router.push(`/otp?phone=${encodeURIComponent(fullPhone)}&redirect=${encodeURIComponent(redirect)}`)
         } catch {
             toast.error('Could not send OTP. Please try again.')
         }
@@ -48,33 +46,28 @@ function LoginContent() {
 
     return (
         <div className="space-y-8">
-            {/* Logo + Title */}
-            <div>
-                <div className="mb-6 flex items-center gap-2.5">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[color:var(--shop-primary)]">
-                        <span className="text-white font-extrabold text-lg">G</span>
-                    </div>
-                    <span className="text-xl font-extrabold text-gray-900 tracking-tight">GROLIN</span>
-                </div>
-                <h1 className="text-[28px] font-extrabold text-gray-900 leading-tight">
-                    Fresh groceries,<br />delivered to your door
+            <div className="space-y-3">
+                <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-[color:var(--shop-primary-strong)]">
+                    Sign In
+                </p>
+                <h1 className="text-[34px] font-extrabold leading-[1.05] tracking-[-0.03em] text-[color:var(--shop-ink)] sm:text-[38px]">
+                    Welcome back
                 </h1>
-                <p className="text-sm text-gray-500 mt-2">
-                    Enter your mobile number to get started
+                <p className="max-w-sm text-[15px] leading-7 text-[color:var(--shop-ink-muted)]">
+                    Enter your mobile number to get your secure one-time password.
                 </p>
             </div>
 
-            {/* Form */}
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
                 <div>
-                    <label className="text-sm font-semibold text-gray-700 mb-2 block">
+                    <label className="mb-2 block text-[12px] font-bold uppercase tracking-[0.12em] text-[color:var(--shop-ink-muted)]">
                         Mobile Number
                     </label>
-                    <div className="flex items-stretch overflow-hidden rounded-2xl border-2 border-[color:var(--shop-border)] transition-all focus-within:border-[color:var(--shop-primary)] focus-within:shadow-[0_0_0_4px_rgba(34,197,94,0.08)]">
-                        <span className="flex select-none items-center gap-2 border-r border-gray-200 bg-gray-50 px-4 text-sm font-semibold text-gray-600">
-                            <Phone className="w-4 h-4 text-gray-400" />
-                            +91
-                        </span>
+                    <div className="flex h-[52px] overflow-hidden rounded-[12px] border-[1.5px] border-[color:var(--shop-border)] bg-[color:var(--shop-canvas)] transition-colors focus-within:border-[color:var(--shop-primary)]">
+                        <div className="flex h-full shrink-0 items-center gap-1.5 border-r border-[color:var(--shop-border)] px-3">
+                            <span className="text-[12px] font-bold leading-none tracking-[0.08em] text-[color:var(--shop-ink-muted)]">IN</span>
+                            <span className="text-[13px] font-semibold text-[color:var(--shop-ink)]">+91</span>
+                        </div>
                         <input
                             {...register('phone')}
                             type="tel"
@@ -83,12 +76,12 @@ function LoginContent() {
                             placeholder="Enter 10-digit number"
                             autoFocus
                             autoComplete="tel"
-                            className="flex-1 px-4 py-4 text-[15px] font-medium outline-none bg-white placeholder:text-gray-300 placeholder:font-normal tracking-widest"
+                            className="flex-1 border-0 bg-[color:var(--shop-canvas)] px-3 text-[15px] font-medium tracking-[0.18em] text-[color:var(--shop-ink)] outline-none placeholder:font-normal placeholder:tracking-normal placeholder:text-[color:var(--shop-ink-muted)]"
                         />
                     </div>
                     {errors.phone && (
-                        <p className="text-xs text-red-500 mt-1.5 flex items-center gap-1.5 animate-[shake_0.3s_ease-in-out]">
-                            <span className="w-1 h-1 bg-red-500 rounded-full" />
+                        <p className="mt-1.5 flex items-center gap-1.5 text-xs text-[color:var(--shop-danger)]">
+                            <span className="h-1 w-1 rounded-full bg-[color:var(--shop-danger)]" />
                             {errors.phone.message}
                         </p>
                     )}
@@ -96,56 +89,19 @@ function LoginContent() {
 
                 <button
                     type="submit"
-                    className="flex h-[54px] w-full items-center justify-center gap-2 rounded-xl bg-[color:var(--shop-primary)] text-[15px] font-semibold text-white shadow-[0_4px_16px_rgba(34,197,94,0.3)] transition-all hover:bg-[color:var(--shop-primary-hover)] hover:shadow-[0_6px_24px_rgba(34,197,94,0.4)] active:scale-[0.98] disabled:opacity-60"
+                    className="flex h-[52px] w-full items-center justify-center gap-2 rounded-[14px] bg-[color:var(--shop-primary)] text-[15px] font-semibold text-white transition-all hover:bg-[color:var(--shop-primary-hover)] active:scale-[0.99] disabled:opacity-60"
                     disabled={isSubmitting}
                 >
                     {isSubmitting ? (
-                        <Loader2 className="w-5 h-5 animate-spin" />
+                        <Loader2 className="h-5 w-5 animate-spin" />
                     ) : (
                         <>
-                            Send OTP
-                            <ArrowRight className="w-4 h-4" />
+                            Get OTP
+                            <ArrowRight className="h-4 w-4" />
                         </>
                     )}
                 </button>
             </form>
-
-            {/* Trust signals */}
-            <div className="space-y-3">
-                <div className="flex items-center gap-2 justify-center text-xs text-gray-400">
-                    <Shield className="h-3.5 w-3.5 text-[color:var(--shop-primary)]" />
-                    <span>Your number is safe and secure with us</span>
-                </div>
-
-                <div className="flex items-center justify-center gap-6 pt-4 border-t border-gray-100">
-                    {[
-                        { icon: Truck, label: '30 min delivery' },
-                        { icon: Clock, label: 'Open 24/7' },
-                        { icon: Sparkles, label: 'Fresh quality' },
-                    ].map(({ icon: Icon, label }) => (
-                        <div key={label} className="flex items-center gap-1.5 text-xs text-gray-400">
-                            <Icon className="h-3.5 w-3.5 text-[color:var(--shop-primary)]" />
-                            <span>{label}</span>
-                        </div>
-                    ))}
-                </div>
-            </div>
-        </div>
-    )
-}
-
-function LoginPageSkeleton() {
-    return (
-        <div className="space-y-8">
-            <div className="space-y-3">
-                <div className="h-10 w-32 rounded-xl bg-gray-100" />
-                <div className="h-7 w-64 rounded bg-gray-100" />
-                <div className="h-4 w-48 rounded bg-gray-100" />
-            </div>
-            <div className="space-y-5">
-                <div className="h-[54px] w-full rounded-2xl bg-gray-100" />
-                <div className="h-[54px] w-full rounded-xl bg-gray-100" />
-            </div>
         </div>
     )
 }

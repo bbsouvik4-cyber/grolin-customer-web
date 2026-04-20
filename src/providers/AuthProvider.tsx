@@ -5,7 +5,7 @@ import { useAuthStore } from '@/store/auth.store'
 import { authService } from '@/services/auth.service'
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-    const { setUser, setLoading, logout } = useAuthStore()
+    const { setUser, setLoading, logout, user } = useAuthStore()
 
     useEffect(() => {
         const token = localStorage.getItem('accessToken')
@@ -14,13 +14,34 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             return
         }
 
+        if (user) {
+            setLoading(false)
+        }
+
+        let cancelled = false
+
         authService
             .getProfile()
-            .then((user) => setUser(user))
-            .catch(() => {
-                logout()
+            .then((freshUser) => {
+                if (!cancelled) {
+                    setUser(freshUser)
+                }
             })
-    }, [setUser, setLoading, logout])
+            .catch(() => {
+                if (!cancelled) {
+                    logout()
+                }
+            })
+            .finally(() => {
+                if (!cancelled) {
+                    setLoading(false)
+                }
+            })
+
+        return () => {
+            cancelled = true
+        }
+    }, [logout, setLoading, setUser, user])
 
     return <>{children}</>
 }

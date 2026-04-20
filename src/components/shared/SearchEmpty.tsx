@@ -9,12 +9,18 @@ export function SearchEmpty({ query }: SearchEmptyProps) {
     return (
         <EmptyState
             icon={Search}
-            title={query ? `No results for "${query}"` : 'Search for products'}
+            title={query ? `Nothing found for "${query}"` : 'What are you looking for?'}
             subtitle={
                 query
-                    ? 'Try a different search term or browse categories'
-                    : 'Type to find groceries, snacks, and more'
+                    ? 'Try a shorter search term, check your spelling, or browse our categories instead.'
+                    : 'Search for fresh produce, pantry staples, snacks, and more.'
             }
+            ctaLabel="Browse Categories"
+            ctaHref="/categories"
+            secondaryCtaLabel="All Products"
+            secondaryCtaHref="/products"
+            iconBg="bg-[color:var(--shop-surface-subtle)]"
+            iconColor="text-[color:var(--shop-ink-faint)]"
         />
     )
 }

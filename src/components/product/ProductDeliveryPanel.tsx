@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { CheckCircle2, Loader2, MapPin, PackageCheck, Store, Truck, XCircle } from 'lucide-react'
 import { addressesService } from '@/services/addresses.service'
 import { Button } from '@/components/ui/button'
+import { formatINR } from '@/lib/utils'
 
 type DeliveryStatus = 'idle' | 'checking' | 'available' | 'unavailable' | 'error'
 
@@ -28,7 +29,7 @@ export function ProductDeliveryPanel() {
             if (result.available) {
                 setStatus('available')
                 setMessage(
-                    `Delivery available in ${result.estimatedMin ?? 30} min for ₹${result.deliveryFee ?? 29}.`,
+                    `Delivery available in ${result.estimatedMin ?? 30} min for ${formatINR(result.deliveryFee ?? 29)}.`,
                 )
                 return
             }
@@ -59,7 +60,7 @@ export function ProductDeliveryPanel() {
                     </div>
                 </div>
 
-                <div className="rounded-2xl border border-[color:var(--shop-border)] bg-white/85 p-4">
+                <div className="rounded-2xl border border-[color:var(--shop-border)] bg-[color:var(--shop-surface)] p-4">
                     <div className="flex items-start gap-3">
                         <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-orange-50 text-orange-500 shadow-sm">
                             <Store className="h-5 w-5" strokeWidth={1.7} />
@@ -75,7 +76,7 @@ export function ProductDeliveryPanel() {
                 </div>
             </div>
 
-            <div className="rounded-2xl border border-[color:var(--shop-border)] bg-white/90 p-4">
+            <div className="rounded-2xl border border-[color:var(--shop-border)] bg-[color:var(--shop-surface)] p-4">
                 <div className="flex items-center gap-2 text-sm font-semibold text-[color:var(--shop-ink)]">
                     <MapPin className="h-4 w-4 text-[color:var(--shop-primary)]" strokeWidth={1.8} />
                     Check delivery to your pincode
@@ -92,20 +93,16 @@ export function ProductDeliveryPanel() {
                         }}
                         inputMode="numeric"
                         placeholder="6-digit pincode"
-                        className="h-11 w-full rounded-xl border border-[color:var(--shop-border)] bg-white px-4 text-sm text-[color:var(--shop-ink)] outline-none transition-colors focus:border-[color:var(--shop-primary)]"
+                        className="h-11 w-full rounded-xl border border-[color:var(--shop-border)] bg-[color:var(--shop-canvas)] px-4 text-sm text-[color:var(--shop-ink)] outline-none transition-colors focus:border-[color:var(--shop-primary)]"
                     />
                     <Button
                         type="button"
                         size="lg"
                         onClick={handleCheck}
                         disabled={status === 'checking'}
-                        className="h-11 rounded-xl bg-[color:var(--shop-ink)] px-5 text-sm font-semibold text-white hover:bg-[#1f2937]"
+                        className="h-11 rounded-xl bg-[color:var(--shop-ink)] px-5 text-sm font-semibold text-white hover:opacity-95"
                     >
-                        {status === 'checking' ? (
-                            <Loader2 className="h-4 w-4 animate-spin" />
-                        ) : (
-                            'Check'
-                        )}
+                        {status === 'checking' ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Check'}
                     </Button>
                 </div>
 
@@ -121,8 +118,7 @@ export function ProductDeliveryPanel() {
                         />
                     )}
                     <span>
-                        {message ||
-                            'We will confirm delivery availability, fee, and expected arrival before checkout.'}
+                        {message || 'We will confirm delivery availability, fee, and expected arrival before checkout.'}
                     </span>
                 </div>
             </div>

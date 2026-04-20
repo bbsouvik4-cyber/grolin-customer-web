@@ -1,4 +1,5 @@
 import axios, { AxiosError, type AxiosInstance, type InternalAxiosRequestConfig } from 'axios'
+import { getClientApiBase } from '@/lib/api-base'
 
 interface CustomConfig extends InternalAxiosRequestConfig {
     _retry?: boolean
@@ -14,8 +15,8 @@ class ApiClient {
 
     constructor() {
         this.instance = axios.create({
-            baseURL: process.env.NEXT_PUBLIC_API_URL,
-            timeout: 15_000,
+            baseURL: getClientApiBase(),
+            timeout: 4_000,
             headers: { 'Content-Type': 'application/json' },
         })
         this.setupRequestInterceptor()
@@ -107,3 +108,4 @@ class ApiClient {
 
 export const api = new ApiClient().http
 export default api
+

@@ -1,8 +1,11 @@
-﻿'use client'
+'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { ShoppingCart } from 'lucide-react'
+import Link from 'next/link'
+import Image from 'next/image'
+import { m, useInView, useReducedMotion } from 'framer-motion'
+import { ShoppingCart, ArrowRight, Flame, Clock, Sparkles } from 'lucide-react'
 import { HeroLayered } from '@/components/home/HeroLayered'
 import { BestSellersShowcase, BestSellersShowcaseSkeleton } from '@/components/home/BestSellersShowcase'
 import { CategoryRow } from '@/components/home/CategoryRow'
@@ -10,6 +13,8 @@ import { CategoryRowSkeleton } from '@/components/home/CategoryRowSkeleton'
 import { CollectionRow } from '@/components/home/CollectionRow'
 import { HomeCategoryGrid, HomeCategoryGridSkeleton } from '@/components/home/HomeCategoryGrid'
 import { HomeFeatureGrid, HomeFeatureGridSkeleton } from '@/components/home/HomeFeatureGrid'
+import { EditorialBreak } from '@/components/home/EditorialBreak'
+import { CinematicBanner, DualCinematicBanner } from '@/components/home/CinematicBanner'
 import { LocalTrustSection } from '@/components/home/LocalTrustSection'
 import { PromoBand } from '@/components/home/PromoBand'
 import { TodaysFreshPicks } from '@/components/home/TodaysFreshPicks'
@@ -18,6 +23,7 @@ import { HomeSectionHeader } from '@/components/home/HomeSectionHeader'
 import { HomeTrendingGrid } from '@/components/home/HomeTrendingGrid'
 import { RecommendedSection } from '@/components/home/RecommendedSection'
 import { YourUsualsSection } from '@/components/home/YourUsualsSection'
+import { ViewportReveal } from '@/components/shared/ViewportReveal'
 import { HeaderCategoryNav, HeaderCategoryNavSkeleton } from '@/components/layout/HeaderCategoryNav'
 import { ProductCard } from '@/components/product/ProductCard'
 import { ProductCardSkeleton } from '@/components/product/ProductCardSkeleton'
@@ -392,178 +398,301 @@ export default function HomePage() {
   const shouldShowFeaturedSkeleton = loadingFeatured && resolvedFeaturedProducts.length === 0
 
   return (
-    <div className="pb-12">
+    <div className="pb-0">
       <PromoBand />
       <HeroLayered banners={resolvedBanners} />
 
       {/* YourUsuals — mesh green atmosphere */}
-      <div className="relative overflow-hidden mesh-green grain-overlay py-8">
-        <div className="relative max-w-screen-xl mx-auto">
-          <YourUsualsSection />
+      <ViewportReveal variant="default">
+        <div className="relative overflow-hidden mesh-green grain-overlay py-8">
+          <div className="relative max-w-screen-xl mx-auto">
+            <YourUsualsSection />
+          </div>
         </div>
-      </div>
+      </ViewportReveal>
 
-      {/* Category Discovery — lifted white card on warm canvas */}
-      <div className="relative overflow-hidden bg-[color:var(--shop-canvas)] pb-4">
-        <div className="relative">
-          {shouldShowCategorySkeleton ? (
-            <HomepageCategoryDiscoverySkeleton />
-          ) : discoveryCategories.length > 0 ? (
-            <HomepageCategoryDiscovery
-              categories={discoveryCategories}
-              selectedCategoryId={selectedCategoryId}
-              onSelectCategory={setSelectedCategoryId}
+      {/* Gradient bridge: warm canvas → dark editorial */}
+      <div className="h-16 pointer-events-none" style={{
+        background: 'linear-gradient(to bottom, var(--shop-canvas, #F0ECE8) 0%, #2A1A4A 40%, #0F0A1E 100%)',
+      }} />
+
+      {/* Editorial Break — brand voice transition */}
+      <EditorialBreak />
+
+      {/* Category Discovery — cinematic immersive stage */}
+      <ViewportReveal variant="default">
+        <div className="relative overflow-hidden pb-8" style={{
+          background: 'linear-gradient(180deg, var(--shop-canvas, #F0ECE8) 0%, #F4F0ED 20%, #F0ECE8 50%, #EDE8E3 80%, var(--shop-canvas, #F0ECE8) 100%)',
+        }}>
+          {/* ═══ ATMOSPHERIC BACKGROUND LAYERS ═══ */}
+
+          {/* Layer 1: Cinematic lifestyle photo at very low opacity */}
+          <div className="absolute inset-0 z-0">
+            <img
+              src="/images/banners/category-cinematic-bg.png"
+              alt="" className="h-full w-full object-cover opacity-[0.06] mix-blend-soft-light"
+              loading="lazy"
             />
-          ) : null}
+          </div>
+
+          {/* Layer 2: Floating light orbs for depth — warm tones */}
+          <div className="pointer-events-none absolute -right-20 -top-20 z-0 h-[500px] w-[500px] rounded-full bg-[#16945E] opacity-[0.04] blur-[120px]" />
+          <div className="pointer-events-none absolute -bottom-16 -left-16 z-0 h-[400px] w-[400px] rounded-full bg-[#6E49D8] opacity-[0.03] blur-[100px]" />
+          <div className="pointer-events-none absolute left-1/3 top-1/4 z-0 h-[250px] w-[250px] rounded-full bg-[#E3B93C] opacity-[0.03] blur-[80px]" />
+
+          {/* Layer 3: Subtle dot grid texture */}
+          <div className="pointer-events-none absolute inset-0 z-0 opacity-[0.025]" style={{
+            backgroundImage: 'radial-gradient(circle, rgba(22,148,94,0.15) 1px, transparent 1px)',
+            backgroundSize: '28px 28px',
+          }} />
+
+          {/* Layer 4: Top shimmer accent line */}
+          <div className="absolute left-0 right-0 top-0 z-0 h-[2px]" style={{
+            background: 'linear-gradient(90deg, transparent, rgba(22,148,94,0.2) 20%, rgba(22,148,94,0.35) 50%, rgba(22,148,94,0.2) 80%, transparent)',
+            backgroundSize: '200% 100%',
+            animation: 'shimmer-line 4s ease-in-out infinite',
+          }} />
+
+          {/* Layer 5: Bottom gradient fade */}
+          <div className="pointer-events-none absolute bottom-0 left-0 right-0 z-0 h-24 bg-gradient-to-t from-white/40 to-transparent" />
+
+          {/* ═══ CONTENT ═══ */}
+          <div className="relative z-10">
+            {/* Cinematic section header */}
+            <div className="mx-auto max-w-[1200px] px-4 pt-10 pb-4 sm:px-6 lg:px-8">
+              <div className="flex flex-col items-center text-center mb-2">
+                <span className="inline-flex items-center gap-2.5 rounded-full bg-white/80 px-4 py-2 text-[11px] font-black uppercase tracking-[0.18em] text-[color:var(--shop-primary)] mb-4 shadow-[0_4px_20px_rgba(110,73,216,0.10)] ring-1 ring-[color:var(--shop-primary)]/15 backdrop-blur-md">
+                  <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="m1 1 4 2 2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+                  Shop by Category
+                  <span className="relative flex h-2 w-2">
+                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#22C55E] opacity-50" />
+                    <span className="relative inline-flex h-2 w-2 rounded-full bg-[#22C55E]" />
+                  </span>
+                </span>
+                <h2 className="text-[28px] sm:text-[34px] lg:text-[40px] font-black tracking-[-0.03em] leading-[1.1] text-[color:var(--shop-ink)]">
+                  What are you{' '}
+                  <span className="relative inline-block">
+                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#6E49D8] via-[#9B6DFF] to-[#6E49D8]" style={{ backgroundSize: '200% 100%', animation: 'shimmer-text 3s ease-in-out infinite' }}>looking for?</span>
+                    <span className="absolute -bottom-1 left-0 right-0 h-[3px] rounded-full bg-gradient-to-r from-[#6E49D8] via-[#A78BFA] to-[#6E49D8]" style={{ backgroundSize: '200% 100%', animation: 'shimmer-line 3s ease-in-out infinite' }} />
+                  </span>
+                </h2>
+                <p className="mt-3 text-[14px] leading-[1.6] text-[color:var(--shop-ink-muted)] max-w-md font-medium">
+                  Browse curated categories — from farm-fresh produce to daily essentials.
+                </p>
+              </div>
+            </div>
+
+            <div className="relative">
+              {shouldShowCategorySkeleton ? (
+                <HomepageCategoryDiscoverySkeleton />
+              ) : discoveryCategories.length > 0 ? (
+                <HomepageCategoryDiscovery
+                  categories={discoveryCategories}
+                  selectedCategoryId={selectedCategoryId}
+                  onSelectCategory={setSelectedCategoryId}
+                />
+              ) : null}
+            </div>
+          </div>
+
+          {/* CSS animations for this section */}
+          <style dangerouslySetInnerHTML={{ __html: `
+            @keyframes shimmer-line {
+              0%, 100% { background-position: -200% 0; }
+              50% { background-position: 200% 0; }
+            }
+            @keyframes shimmer-text {
+              0%, 100% { background-position: 0% 0; }
+              50% { background-position: 200% 0; }
+            }
+          `}} />
         </div>
-      </div>
+      </ViewportReveal>
 
-      {/* Featured + Collections 1-2 — warm surface lift */}
-      <div className="relative overflow-hidden py-6 bg-[color:var(--shop-surface-subtle)]">
-        <div className="relative mx-auto max-w-[1680px]">
-          {shouldShowFeaturedSkeleton ? (
-            <HomeFeatureGridSkeleton />
-          ) : filteredFeaturedProducts.length > 0 ? (
-            <HomeFeatureGrid
-              products={filteredFeaturedProducts.slice(0, 10)}
-              title="Featured Deals"
-              subtitle="High-conviction value picks designed to open the homepage with energy and intent."
-            />
-          ) : null}
+      {/* Featured + Collections 1-2 — cinematic warm surface with depth */}
+      <ViewportReveal variant="default">
+        <div className="relative overflow-hidden py-10 md:py-14" style={{
+          background: 'linear-gradient(180deg, var(--shop-canvas, #F0ECE8) 0%, #F2EEE9 25%, #EDE8E3 50%, #F2EEE9 75%, var(--shop-canvas, #F0ECE8) 100%)',
+        }}>
+          {/* Atmospheric depth layers */}
+          <div className="pointer-events-none absolute -right-32 top-20 z-0 h-[400px] w-[400px] rounded-full bg-[#6E49D8] opacity-[0.03] blur-[100px]" />
+          <div className="pointer-events-none absolute -left-24 bottom-20 z-0 h-[350px] w-[350px] rounded-full bg-[#FBBF24] opacity-[0.03] blur-[80px]" />
+          {/* Top accent line */}
+          <div className="absolute left-0 right-0 top-0 z-0 h-[1px] bg-gradient-to-r from-transparent via-[color:var(--shop-primary)]/15 to-transparent" />
 
-          {curatedCollections[0] && curatedCollections[0].products.length > 0 && (
-            <CollectionRow
-              title={curatedCollections[0].title}
-              eyebrow={curatedCollections[0].eyebrow}
-              emoji={curatedCollections[0].emoji}
-              subtitle={curatedCollections[0].subtitle}
-              gradient={curatedCollections[0].gradient}
-              products={curatedCollections[0].products}
-              viewAllHref={curatedCollections[0].viewAllHref}
-              image={curatedCollections[0].image}
-            />
-          )}
+          <div className="relative z-10 mx-auto max-w-[1680px]">
+            {shouldShowFeaturedSkeleton ? (
+              <HomeFeatureGridSkeleton />
+            ) : filteredFeaturedProducts.length > 0 ? (
+              <HomeFeatureGrid
+                products={filteredFeaturedProducts.slice(0, 10)}
+                title="Featured Deals"
+                subtitle="High-conviction value picks designed to open the homepage with energy and intent."
+              />
+            ) : null}
 
-          <RecommendedSection />
+            {curatedCollections[0] && curatedCollections[0].products.length > 0 && (
+              <CollectionRow
+                title={curatedCollections[0].title}
+                eyebrow={curatedCollections[0].eyebrow}
+                emoji={curatedCollections[0].emoji}
+                subtitle={curatedCollections[0].subtitle}
+                gradient={curatedCollections[0].gradient}
+                products={curatedCollections[0].products}
+                viewAllHref={curatedCollections[0].viewAllHref}
+                image={curatedCollections[0].image}
+              />
+            )}
 
-          {curatedCollections[1] && curatedCollections[1].products.length > 0 && (
-            <CollectionRow
-              title={curatedCollections[1].title}
-              eyebrow={curatedCollections[1].eyebrow}
-              emoji={curatedCollections[1].emoji}
-              subtitle={curatedCollections[1].subtitle}
-              gradient={curatedCollections[1].gradient}
-              products={curatedCollections[1].products}
-              viewAllHref={curatedCollections[1].viewAllHref}
-              image={curatedCollections[1].image}
-            />
-          )}
+            {/* ── Cinematic Banner: Breakfast context ── */}
+            <div className="home-section-spacing">
+              <CinematicBanner variant="breakfast" />
+            </div>
+
+            <RecommendedSection />
+
+            {curatedCollections[1] && curatedCollections[1].products.length > 0 && (
+              <CollectionRow
+                title={curatedCollections[1].title}
+                eyebrow={curatedCollections[1].eyebrow}
+                emoji={curatedCollections[1].emoji}
+                subtitle={curatedCollections[1].subtitle}
+                gradient={curatedCollections[1].gradient}
+                products={curatedCollections[1].products}
+                viewAllHref={curatedCollections[1].viewAllHref}
+                image={curatedCollections[1].image}
+              />
+            )}
+
+            {/* ── Cinematic Banner: Dinner context ── */}
+            <div className="home-section-spacing">
+              <CinematicBanner variant="dinner" />
+            </div>
+          </div>
         </div>
-      </div>
+      </ViewportReveal>
 
-      {/* Promise + Collection 3 + Category Grid — warm canvas with mesh atmosphere */}
-      <div className="relative overflow-hidden mesh-warm grain-overlay py-5">
-        <div className="relative mx-auto max-w-[1680px]">
-          <HomePromiseBanner />
+      {/* Gradient bridge: warm canvas → dark promise */}
+      <div className="h-20 pointer-events-none" style={{
+        background: 'linear-gradient(to bottom, var(--shop-canvas, #F0ECE8) 0%, #D5CCC3 20%, #9E8FB0 45%, #5A3D8A 65%, #1F1245 85%, #1F1245 100%)',
+      }} />
 
-          {curatedCollections[2] && curatedCollections[2].products.length > 0 && (
-            <CollectionRow
-              title={curatedCollections[2].title}
-              eyebrow={curatedCollections[2].eyebrow}
-              emoji={curatedCollections[2].emoji}
-              subtitle={curatedCollections[2].subtitle}
-              gradient={curatedCollections[2].gradient}
-              products={curatedCollections[2].products}
-              viewAllHref={curatedCollections[2].viewAllHref}
-              image={curatedCollections[2].image}
-            />
-          )}
+      {/* Promise — cinematic 3-act section with its own dark/light backgrounds */}
+      <HomePromiseBanner />
 
-          {loadingCategories && categories.length === 0 ? <HomeCategoryGridSkeleton /> : categories.length > 0 ? <HomeCategoryGrid categories={categories} /> : null}
+      {/* Collection 3 + Category Grid — warm canvas with mesh atmosphere */}
+      <ViewportReveal variant="default">
+        <div className="relative overflow-hidden mesh-warm grain-overlay py-8 md:py-10">
+          <div className="relative mx-auto max-w-[1680px]">
+            {curatedCollections[2] && curatedCollections[2].products.length > 0 && (
+              <CollectionRow
+                title={curatedCollections[2].title}
+                eyebrow={curatedCollections[2].eyebrow}
+                emoji={curatedCollections[2].emoji}
+                subtitle={curatedCollections[2].subtitle}
+                gradient={curatedCollections[2].gradient}
+                products={curatedCollections[2].products}
+                viewAllHref={curatedCollections[2].viewAllHref}
+                image={curatedCollections[2].image}
+              />
+            )}
+
+            {/* ── Dual Banners: Healthy + Treats ── */}
+            <div className="home-section-spacing">
+              <DualCinematicBanner left="healthy" right="treats" />
+            </div>
+
+            {loadingCategories && categories.length === 0 ? <HomeCategoryGridSkeleton /> : categories.length > 0 ? <HomeCategoryGrid categories={categories} /> : null}
+          </div>
         </div>
-      </div>
+      </ViewportReveal>
 
       <LocalTrustSection />
 
       {/* Collections 4-6 — white lift off dark anchor */}
-      <div className="relative overflow-hidden bg-[color:var(--shop-surface-subtle)] py-6">
-        <div className="relative mx-auto max-w-[1680px]">
-          {curatedCollections[3] && curatedCollections[3].products.length > 0 && (
-            <CollectionRow
-              title={curatedCollections[3].title}
-              eyebrow={curatedCollections[3].eyebrow}
-              emoji={curatedCollections[3].emoji}
-              subtitle={curatedCollections[3].subtitle}
-              gradient={curatedCollections[3].gradient}
-              products={curatedCollections[3].products}
-              viewAllHref={curatedCollections[3].viewAllHref}
-              image={curatedCollections[3].image}
-            />
-          )}
+      <ViewportReveal variant="default">
+        <div className="relative overflow-hidden bg-[color:var(--shop-surface-subtle)] py-8 md:py-10">
+          <div className="relative mx-auto max-w-[1680px]">
+            {curatedCollections[3] && curatedCollections[3].products.length > 0 && (
+              <CollectionRow
+                title={curatedCollections[3].title}
+                eyebrow={curatedCollections[3].eyebrow}
+                emoji={curatedCollections[3].emoji}
+                subtitle={curatedCollections[3].subtitle}
+                gradient={curatedCollections[3].gradient}
+                products={curatedCollections[3].products}
+                viewAllHref={curatedCollections[3].viewAllHref}
+                image={curatedCollections[3].image}
+              />
+            )}
 
-          {curatedCollections[4] && curatedCollections[4].products.length > 0 && (
-            <CollectionRow
-              title={curatedCollections[4].title}
-              eyebrow={curatedCollections[4].eyebrow}
-              emoji={curatedCollections[4].emoji}
-              subtitle={curatedCollections[4].subtitle}
-              gradient={curatedCollections[4].gradient}
-              products={curatedCollections[4].products}
-              viewAllHref={curatedCollections[4].viewAllHref}
-              image={curatedCollections[4].image}
-            />
-          )}
+            {curatedCollections[4] && curatedCollections[4].products.length > 0 && (
+              <CollectionRow
+                title={curatedCollections[4].title}
+                eyebrow={curatedCollections[4].eyebrow}
+                emoji={curatedCollections[4].emoji}
+                subtitle={curatedCollections[4].subtitle}
+                gradient={curatedCollections[4].gradient}
+                products={curatedCollections[4].products}
+                viewAllHref={curatedCollections[4].viewAllHref}
+                image={curatedCollections[4].image}
+              />
+            )}
 
-          {curatedCollections[5] && curatedCollections[5].products.length > 0 && (
-            <CollectionRow
-              title={curatedCollections[5].title}
-              eyebrow={curatedCollections[5].eyebrow}
-              emoji={curatedCollections[5].emoji}
-              subtitle={curatedCollections[5].subtitle}
-              gradient={curatedCollections[5].gradient}
-              products={curatedCollections[5].products}
-              viewAllHref={curatedCollections[5].viewAllHref}
-              image={curatedCollections[5].image}
-            />
-          )}
+            {curatedCollections[5] && curatedCollections[5].products.length > 0 && (
+              <CollectionRow
+                title={curatedCollections[5].title}
+                eyebrow={curatedCollections[5].eyebrow}
+                emoji={curatedCollections[5].emoji}
+                subtitle={curatedCollections[5].subtitle}
+                gradient={curatedCollections[5].gradient}
+                products={curatedCollections[5].products}
+                viewAllHref={curatedCollections[5].viewAllHref}
+                image={curatedCollections[5].image}
+              />
+            )}
+
+            {/* ── Dual Banners: Essentials + Family ── */}
+            <div className="home-section-spacing">
+              <DualCinematicBanner left="essentials" right="family" />
+            </div>
+          </div>
         </div>
-      </div>
+      </ViewportReveal>
 
-      {/* Best Sellers — elevated white surface with shadow separation */}
-      <div className="relative overflow-hidden bg-[color:var(--shop-surface)] py-5 shadow-[var(--shop-shadow-level-4)]">
-        <div className="relative mx-auto max-w-[1680px]">
-          {shouldShowFeaturedSkeleton ? (
-            <section className="px-3 home-section-spacing sm:px-4 lg:px-6">
-              <BestSellersShowcaseSkeleton />
-            </section>
-          ) : filteredFeaturedProducts.length > 0 ? (
-            <section className="px-3 home-section-spacing sm:px-4 lg:px-6">
-              <BestSellersShowcase products={filteredFeaturedProducts} />
-            </section>
-          ) : null}
+      {/* Best Sellers — cinematic brand showcase */}
+      <ViewportReveal variant="default">
+        <div className="relative overflow-hidden bg-[color:var(--shop-canvas)] py-8 md:py-10">
+          <div className="relative mx-auto max-w-[1680px]">
+            {shouldShowFeaturedSkeleton ? (
+              <section className="px-3 home-section-spacing sm:px-4 lg:px-6">
+                <BestSellersShowcaseSkeleton />
+              </section>
+            ) : filteredFeaturedProducts.length > 0 ? (
+              <section className="px-3 home-section-spacing sm:px-4 lg:px-6">
+                <BestSellersShowcase products={filteredFeaturedProducts} />
+              </section>
+            ) : null}
+          </div>
         </div>
-      </div>
+      </ViewportReveal>
 
-      <div className="relative overflow-hidden bg-[color:var(--shop-canvas)] py-4">
+      <div className="relative overflow-hidden bg-[color:var(--shop-canvas)] py-8">
         <div className="relative mx-auto max-w-[1680px]">
           {filteredTrendingProducts.length > 0 && <HomeTrendingGrid products={filteredTrendingProducts} />}
 
+          {/* ── Cinematic Banner: Free Delivery promo ── */}
+          <div className="home-section-spacing">
+            <CinematicBanner variant="free-delivery" compact />
+          </div>
+
           <TodaysFreshPicks products={filteredNewArrivals} isLoading={shouldShowFeaturedSkeleton} />
 
+          {/* ═══════════════════════════════════════════════════════════
+              WEEKLY PICKS — Cinematic Conversion-Focused Spotlight
+              ═══════════════════════════════════════════════════════════ */}
           {filteredDealProducts.length > 0 && (
-            <section className="px-3 home-section-spacing sm:px-4 lg:px-6">
-              <HomeSectionHeader
-                title="Weekly Picks"
-                subtitle="Current-value products pulled from the live deals feed without crowding the main merchandising."
-                viewAllHref="/products"
-                eyebrow="DEALS"
-              />
-              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4 xl:grid-cols-5">
-                {filteredDealProducts.slice(0, 6).map((product, index) => (
-                  <ProductCard key={product.id} product={product} priority={index < 4} />
-                ))}
-              </div>
-            </section>
+            <WeeklyPicksSection products={filteredDealProducts} />
           )}
 
           {(selectedCategoryId !== 'all' || (!loadingCatalog && resolvedCatalogProducts.length === 0)) && (
@@ -578,7 +707,229 @@ export default function HomePage() {
           )}
         </div>
       </div>
+
+      {/* ═══════════════════════════════════════════════════════════════
+          CLOSING — Smooth gradient bridge from warm canvas → footer dark
+          ═══════════════════════════════════════════════════════════════ */}
+      <div
+        className="pointer-events-none relative z-10"
+        style={{
+          height: 120,
+          background: 'linear-gradient(to bottom, var(--shop-canvas, #F0ECE8) 0%, #D5CCC3 15%, #9E8FB0 35%, #5A3D8A 55%, #2A1A5C 75%, #12082E 100%)',
+        }}
+      />
     </div>
+  )
+}
+
+// ═══════════════════════════════════════════════════════════════════
+//  WEEKLY PICKS — Cinematic Conversion-Focused Spotlight
+// ═══════════════════════════════════════════════════════════════════
+function WeeklyPicksSection({ products }: { products: Product[] }) {
+  const ref = useRef<HTMLDivElement>(null)
+  const inView = useInView(ref, { once: true, margin: '-30px' })
+  const prefersReduced = useReducedMotion()
+  const heroProduct = products[0]
+  const supportingProducts = products.slice(1, 7)
+
+  // Calculate max savings for counter
+  const maxSavings = useMemo(() => {
+    return products.slice(0, 6).reduce((max, p) => {
+      const salePrice = p.sale_price ?? p.salePrice ?? null
+      const saved = salePrice !== null && salePrice < p.price ? p.price - salePrice : 0
+      return saved > max ? saved : max
+    }, 0)
+  }, [products])
+
+  return (
+    <section
+      ref={ref}
+      className="relative overflow-hidden home-section-spacing"
+      aria-label="Weekly Picks"
+    >
+      {/* ═══ ATMOSPHERIC BACKGROUND ═══ */}
+      <div className="absolute inset-0 z-0" style={{
+        background: `linear-gradient(165deg, 
+          var(--shop-canvas, #F0ECE8) 0%, 
+          #EDE6DF 20%,
+          #F0E9F5 45%, 
+          #EDE3F8 60%, 
+          #F0E9F5 75%,
+          var(--shop-canvas, #F0ECE8) 100%)`,
+      }} />
+
+      {/* Floating ambient orbs */}
+      <div
+        className="ambient-orb z-0"
+        style={{
+          width: 350, height: 350,
+          top: '-15%', left: '60%',
+          background: 'rgba(110, 73, 216, 0.07)',
+          filter: 'blur(90px)',
+          animationDelay: '1s',
+        }}
+      />
+      <div
+        className="ambient-orb z-0"
+        style={{
+          width: 280, height: 280,
+          bottom: '5%', left: '-5%',
+          background: 'rgba(22, 148, 94, 0.06)',
+          filter: 'blur(80px)',
+          animationDelay: '3s',
+        }}
+      />
+
+      {/* Dot grid texture */}
+      <div
+        className="pointer-events-none absolute inset-0 z-0 opacity-[0.02]"
+        style={{
+          backgroundImage: 'radial-gradient(circle, rgba(110,73,216,0.3) 1px, transparent 1px)',
+          backgroundSize: '28px 28px',
+        }}
+      />
+
+      {/* Top shimmer accent */}
+      <div className="absolute left-0 right-0 top-0 z-[1] shimmer-accent-line" />
+
+      <div className="relative z-[2] px-3 sm:px-4 lg:px-6">
+
+        {/* ═══ CINEMATIC HEADER ═══ */}
+        <m.div
+          initial={prefersReduced ? false : { opacity: 0, y: 8 }}
+          animate={inView ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
+          className="mb-8 flex flex-col sm:flex-row sm:items-end justify-between gap-4"
+        >
+          <div className="flex flex-col gap-2.5">
+            {/* Urgency pill badge */}
+            <m.span
+              initial={prefersReduced ? false : { opacity: 0, scale: 0.8 }}
+              animate={inView ? { opacity: 1, scale: 1 } : {}}
+              transition={{ type: 'spring', stiffness: 200, damping: 18, delay: 0.1 }}
+              className="inline-flex w-fit items-center gap-2 rounded-full bg-gradient-to-r from-orange-500/10 to-red-500/10 px-3.5 py-1.5 text-[10px] font-black uppercase tracking-[0.18em] text-orange-700 ring-1 ring-orange-500/15 backdrop-blur-sm"
+            >
+              <Flame className="h-3 w-3" strokeWidth={2.2} />
+              Hot Deals
+              <span className="relative flex h-1.5 w-1.5">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-orange-500 opacity-40" />
+                <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-orange-500" />
+              </span>
+            </m.span>
+
+            {/* Headline */}
+            <h2 className="text-[28px] sm:text-[34px] lg:text-[40px] font-black tracking-[-0.03em] leading-[1.1] text-[color:var(--shop-ink)]">
+              Weekly{' '}
+              <span className="relative inline-block">
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#6E49D8] via-[#9B6DFF] to-[#6E49D8]" style={{ backgroundSize: '200% 100%', animation: 'shimmer-accent 4s ease-in-out infinite' }}>
+                  Picks
+                </span>
+                <span
+                  className="absolute -bottom-1 left-0 right-0 h-[3px] rounded-full bg-gradient-to-r from-[#6E49D8] via-[#A78BFA] to-[#6E49D8]"
+                  style={{ backgroundSize: '200% 100%', animation: 'shimmer-accent 4s ease-in-out infinite' }}
+                />
+              </span>
+            </h2>
+
+            <p className="mt-0.5 max-w-[520px] text-[13px] sm:text-[14px] leading-[1.6] text-[color:var(--shop-ink-muted)] font-medium">
+              Best-value deals handpicked from this week&apos;s freshest drops — shop early for the best picks.
+            </p>
+
+            {/* Savings counter badge */}
+            {maxSavings > 0 && (
+              <m.div
+                initial={prefersReduced ? false : { opacity: 0, x: -10 }}
+                animate={inView ? { opacity: 1, x: 0 } : {}}
+                transition={{ type: 'spring', stiffness: 150, damping: 20, delay: 0.3 }}
+                className="inline-flex w-fit items-center gap-2 rounded-full bg-[color:var(--shop-action)]/8 px-3.5 py-1.5 ring-1 ring-[color:var(--shop-action)]/12"
+              >
+                <span className="text-[11px] font-semibold text-[color:var(--shop-action)]">
+                  Save up to
+                </span>
+                <span className="text-[15px] font-black text-[color:var(--shop-action)] savings-glow">
+                  ₹{maxSavings}
+                </span>
+                <span className="text-[11px] font-semibold text-[color:var(--shop-action)]">
+                  this week
+                </span>
+              </m.div>
+            )}
+          </div>
+
+          {/* See all + refresh timer */}
+          <div className="flex flex-col items-end gap-2 mb-1">
+            <Link
+              href="/products"
+              className="group inline-flex items-center gap-2 rounded-full bg-[color:var(--shop-primary)] px-5 py-2.5 text-[12px] font-bold text-white shadow-[0_4px_16px_rgba(110,73,216,0.25)] transition-all duration-200 hover:shadow-[0_6px_24px_rgba(110,73,216,0.35)] hover:scale-[1.02]"
+            >
+              View All Deals
+              <ArrowRight className="h-3.5 w-3.5 transition-transform duration-300 group-hover:translate-x-0.5" strokeWidth={2.5} />
+            </Link>
+            <span className="inline-flex items-center gap-1.5 text-[10px] font-semibold text-[color:var(--shop-ink-faint)] uppercase tracking-[0.12em]">
+              <Clock className="h-3 w-3" strokeWidth={1.8} />
+              Deals refresh weekly
+            </span>
+          </div>
+        </m.div>
+
+        {/* ═══ PRODUCT GRID ═══ */}
+        <m.div
+          initial={prefersReduced ? false : { opacity: 0, y: 24 }}
+          animate={inView ? { opacity: 1, y: 0 } : {}}
+          transition={{ type: 'spring', stiffness: 100, damping: 22, delay: 0.2 }}
+          className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4 xl:grid-cols-6"
+        >
+          {/* Hero spotlight — first deal gets special treatment */}
+          {heroProduct && (
+            <div className="col-span-2 sm:col-span-1 xl:col-span-1">
+              <div className="deal-spotlight-glow rounded-[var(--shop-card-radius)]">
+                <ProductCard product={heroProduct} priority />
+              </div>
+            </div>
+          )}
+
+          {/* Supporting deals */}
+          {supportingProducts.map((product, index) => (
+            <m.div
+              key={product.id}
+              initial={prefersReduced ? false : { opacity: 0, y: 16 }}
+              animate={inView ? { opacity: 1, y: 0 } : {}}
+              transition={{
+                type: 'spring',
+                stiffness: 120,
+                damping: 22,
+                delay: 0.25 + index * 0.05,
+              }}
+            >
+              <ProductCard product={product} priority={index < 3} />
+            </m.div>
+          ))}
+        </m.div>
+
+        {/* ═══ INLINE CTA STRIP ═══ */}
+        <m.div
+          initial={prefersReduced ? false : { opacity: 0, y: 12 }}
+          animate={inView ? { opacity: 1, y: 0 } : {}}
+          transition={{ type: 'spring', stiffness: 100, damping: 22, delay: 0.5 }}
+          className="mt-6 flex items-center justify-center gap-3 rounded-2xl border border-[color:var(--shop-primary)]/8 bg-gradient-to-r from-[color:var(--shop-primary)]/[0.03] via-transparent to-[color:var(--shop-action)]/[0.03] px-5 py-3.5"
+        >
+          <Sparkles className="h-4 w-4 text-[color:var(--shop-primary)] opacity-60" strokeWidth={1.8} />
+          <p className="text-[12px] sm:text-[13px] font-semibold text-[color:var(--shop-ink-muted)]">
+            Deals refresh every week — <span className="text-[color:var(--shop-primary)] font-bold">shop early</span> for the best picks
+          </p>
+          <Link
+            href="/products"
+            className="hidden sm:inline-flex items-center gap-1 text-[11px] font-bold text-[color:var(--shop-primary)] transition-colors hover:text-[color:var(--shop-primary-hover)]"
+          >
+            Browse All
+            <ArrowRight className="h-3 w-3" strokeWidth={2.5} />
+          </Link>
+        </m.div>
+      </div>
+
+      {/* Bottom shimmer accent */}
+      <div className="absolute left-0 right-0 bottom-0 z-[1] shimmer-accent-line" />
+    </section>
   )
 }
 
@@ -593,7 +944,7 @@ function HomepageCategoryDiscovery({
 }) {
   return (
     <section className="px-2 pt-4 sm:px-4 lg:px-4 lg:pt-5">
-      <div className="overflow-hidden rounded-[30px] border border-[color:var(--shop-border)] bg-[linear-gradient(180deg,rgba(255,255,255,0.98)_0%,rgba(248,244,255,0.86)_100%)] shadow-[var(--shop-shadow-level-2)]">
+      <div className="overflow-hidden rounded-[32px] border border-white/60 bg-white/70 shadow-[0_24px_64px_rgba(110,73,216,0.08),0_0_0_1px_rgba(110,73,216,0.06)] backdrop-blur-xl">
         <HeaderCategoryNav
           categories={categories}
           mode="select"
@@ -601,7 +952,7 @@ function HomepageCategoryDiscovery({
           onCategorySelect={onSelectCategory}
         />
 
-        <div className="px-0 pb-5 pt-4 sm:px-5 sm:pb-6 lg:px-7 lg:pb-7 lg:pt-5">
+        <div className="px-0 pb-6 pt-4 sm:px-5 sm:pb-7 lg:px-7 lg:pb-8 lg:pt-5">
           <CategoryRow
             categories={categories}
             selectedCategoryId={selectedCategoryId === 'all' ? undefined : selectedCategoryId}
@@ -615,9 +966,9 @@ function HomepageCategoryDiscovery({
 function HomepageCategoryDiscoverySkeleton() {
   return (
     <section className="px-2 pt-4 sm:px-4 lg:px-4 lg:pt-5">
-      <div className="overflow-hidden rounded-[30px] border border-[color:var(--shop-border)] bg-[linear-gradient(180deg,rgba(255,255,255,0.98)_0%,rgba(248,244,255,0.86)_100%)] shadow-[var(--shop-shadow-level-2)]">
+      <div className="overflow-hidden rounded-[32px] border border-white/60 bg-white/70 shadow-[0_24px_64px_rgba(110,73,216,0.08)] backdrop-blur-xl">
         <HeaderCategoryNavSkeleton />
-        <div className="px-0 pb-5 pt-4 sm:px-5 sm:pb-6 lg:px-7 lg:pb-7 lg:pt-5">
+        <div className="px-0 pb-6 pt-4 sm:px-5 sm:pb-7 lg:px-7 lg:pb-8 lg:pt-5">
           <CategoryRowSkeleton />
         </div>
       </div>

@@ -24,17 +24,19 @@ export function PromoCodeInput({
 
     if (appliedCode) {
         return (
-            <div className="flex items-center justify-between rounded-[22px] border border-[#D6E7DA] bg-[linear-gradient(180deg,#F5FFF7_0%,#EEF8F1_100%)] px-4 py-4 shadow-[0_10px_20px_rgba(22,163,74,0.06)]">
+            <div className="flex items-center justify-between rounded-[16px] border border-[color:var(--shop-border)] bg-[color:var(--shop-surface-elevated)] px-4 py-3.5 shadow-[var(--shop-shadow-level-1)]">
                 <div className="flex items-center gap-2">
-                    <Tag className="h-4 w-4 text-green-600" strokeWidth={1.5} />
-                    <span className="text-sm font-semibold text-green-700">{appliedCode}</span>
-                    <span className="text-xs text-green-600">applied</span>
+                    <Tag className="h-4 w-4 text-[color:var(--shop-action)]" strokeWidth={1.5} />
+                    <span className="text-sm font-semibold text-[color:var(--shop-ink)]">{appliedCode}</span>
+                    <span className="text-xs text-[color:var(--shop-action)]">applied</span>
                 </div>
                 <button
+                    type="button"
                     onClick={onRemove}
-                    className="flex h-7 w-7 items-center justify-center rounded-full hover:bg-green-100"
+                    className="flex h-8 w-8 items-center justify-center rounded-full transition-colors hover:bg-[color:var(--shop-action-soft)]"
+                    aria-label="Remove promo code"
                 >
-                    <X className="h-3.5 w-3.5 text-green-600" />
+                    <X className="h-3.5 w-3.5 text-[color:var(--shop-action)]" />
                 </button>
             </div>
         )
@@ -42,24 +44,26 @@ export function PromoCodeInput({
 
     return (
         <div className="space-y-3">
-            <div className="flex gap-2">
+            <div className="flex items-stretch">
                 <input
                     type="text"
                     placeholder="Promo code"
                     value={code}
                     onChange={(event) => setCode(event.target.value.toUpperCase())}
-                    className="flex-1 rounded-[20px] border border-[#E4E7EA] bg-[#FCFBF8] px-4 py-3.5 text-sm font-medium text-gray-900 placeholder:text-gray-400 shadow-[inset_0_1px_0_rgba(255,255,255,0.9)] focus:border-[color:var(--shop-primary)] focus:outline-none focus:ring-1 focus:ring-[color:var(--shop-primary)]"
+                    className="h-11 flex-1 rounded-l-[10px] rounded-r-none border border-r-0 border-[color:var(--shop-border)] bg-white px-4 text-sm font-medium text-[color:var(--shop-ink)] placeholder:text-[color:var(--shop-ink-faint)] outline-none transition-colors focus:z-10 focus:border-[color:var(--shop-primary)]"
+                    style={{ borderWidth: '1.5px' }}
                 />
                 <button
+                    type="button"
                     onClick={() => {
                         if (code.trim()) onApply(code.trim())
                     }}
                     disabled={!code.trim() || isValidating}
                     className={cn(
-                        'rounded-[20px] px-5 py-3.5 text-sm font-semibold transition-colors',
+                        'inline-flex h-11 min-w-[96px] items-center justify-center rounded-l-none rounded-r-[10px] px-5 text-sm font-semibold text-white transition-opacity',
                         code.trim()
-                            ? 'bg-[color:var(--shop-primary)] text-white hover:bg-[color:var(--shop-primary-hover)]'
-                            : 'bg-[#EFF1F3] text-[#9AA1A9]',
+                            ? 'bg-[color:var(--shop-accent)] hover:opacity-95'
+                            : 'bg-[color:var(--shop-accent)] opacity-55',
                     )}
                 >
                     {isValidating ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Apply'}
@@ -67,14 +71,15 @@ export function PromoCodeInput({
             </div>
 
             <button
+                type="button"
                 onClick={onViewCoupons}
-                className="flex w-full items-center justify-between rounded-[20px] border border-dashed border-[#D7DDDE] bg-white/60 px-4 py-3.5 text-left transition-colors hover:border-[color:var(--shop-primary)]/50 hover:bg-[rgba(108,84,196,0.04)]"
+                className="flex w-full items-center justify-between rounded-[14px] border border-dashed border-[color:var(--shop-border)] bg-[color:var(--shop-surface-subtle)] px-4 py-3 text-left transition-colors hover:border-[color:var(--shop-primary)] hover:bg-[color:var(--shop-primary-soft)]"
             >
                 <div className="flex items-center gap-2">
-                    <Tag className="h-4 w-4 text-[color:var(--shop-primary)]/70" strokeWidth={1.5} />
-                    <span className="text-sm font-medium text-[#5E6874]">Browse available coupons</span>
+                    <Tag className="h-4 w-4 text-[color:var(--shop-primary)] opacity-70" strokeWidth={1.5} />
+                    <span className="text-sm font-medium text-[color:var(--shop-ink-muted)]">Browse available coupons</span>
                 </div>
-                <ChevronRight className="h-4 w-4 text-[color:var(--shop-primary)]/70" />
+                <ChevronRight className="h-4 w-4 text-[color:var(--shop-primary)] opacity-70" />
             </button>
         </div>
     )

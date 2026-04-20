@@ -11,7 +11,7 @@ export function SectionHeader({ title, subtitle, action, className }: SectionHea
   return (
     <div className={cn('flex items-end justify-between gap-4', className)}>
       <div>
-        <h2 className="text-[22px] font-bold tracking-tight text-[color:var(--shop-ink)] sm:text-[26px]">
+        <h2 className="section-heading">
           {title}
         </h2>
         {subtitle && (

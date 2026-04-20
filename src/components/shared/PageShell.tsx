@@ -20,7 +20,7 @@ export function PageShell({
   return (
     <div
       className={cn(
-        'page-enter px-4 py-5 sm:px-5 lg:px-6 lg:py-6',
+        'page-enter mx-auto w-full max-w-screen-xl px-4 py-5 sm:px-5 lg:px-6 lg:py-6',
         SPACING_MAP[spacing],
         className,
       )}

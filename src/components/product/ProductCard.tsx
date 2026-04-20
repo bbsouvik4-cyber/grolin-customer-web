@@ -5,6 +5,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { Loader2, Minus, Plus, ShoppingCart } from 'lucide-react'
 import { m, AnimatePresence } from 'framer-motion'
+import { Skeleton } from '@/components/ui/skeleton'
 import { useCart } from '@/hooks/useCart'
 import { useFlyToCart } from '@/hooks/useFlyToCart'
 import { WishlistButton } from '@/components/product/WishlistButton'
@@ -138,7 +139,9 @@ function ProductAction({
           initial={{ opacity: 0, scale: 0.85 }}
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.85 }}
-          transition={{ duration: 0.18, ease: [0.25, 0.46, 0.45, 0.94] }}
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.92 }}
+          transition={{ type: 'spring', stiffness: 450, damping: 15 }}
           type="button"
           onClick={(event) => {
             event.preventDefault()
@@ -146,7 +149,7 @@ function ProductAction({
             onAdd()
           }}
           disabled={isAdding}
-          className="inline-flex h-9 w-full items-center justify-center gap-2 rounded-[10px] px-4 text-[13px] font-bold text-white shadow-green-glow hover:shadow-green-glow-hover btn-press transition-all duration-150 disabled:cursor-not-allowed disabled:opacity-55"
+          className="inline-flex h-9 w-full items-center justify-center gap-2 rounded-[10px] px-4 text-[13px] font-bold text-white shadow-green-glow hover:shadow-green-glow-hover btn-press transition-shadow duration-150 disabled:cursor-not-allowed disabled:opacity-55"
           style={{ backgroundImage: 'linear-gradient(135deg, #16945E 0%, #128050 100%)' }}
           aria-label={`Add ${product.name} to cart`}
         >
@@ -212,11 +215,13 @@ export const ProductCard = React.memo(function ProductCard({
   const showPopular = !discount && (product.weekly_sales ?? 0) > 500
   const resolvedImageSrc = React.useMemo(() => getProductImageSrc(product), [product])
   const [imageFailed, setImageFailed] = React.useState(false)
+  const [isLoaded, setIsLoaded] = React.useState(false)
   const unitRateLabel = getUnitPriceLabel(displayPrice, product.unit)
   const isSection = variant === 'section'
 
   React.useEffect(() => {
     setImageFailed(false)
+    setIsLoaded(false)
   }, [resolvedImageSrc])
 
   const imageSrc = imageFailed ? PRODUCT_IMAGE_PLACEHOLDER : resolvedImageSrc
@@ -279,14 +284,19 @@ export const ProductCard = React.memo(function ProductCard({
             }}
           />
 
+          {!isLoaded && (
+            <Skeleton className="absolute inset-0 z-10 rounded-[22px]" />
+          )}
           <Image
             src={imageSrc}
             alt={product.name}
             fill
-            onError={() => setImageFailed(true)}
+            onError={() => { setImageFailed(true); setIsLoaded(true) }}
+            onLoad={() => setIsLoaded(true)}
             data-product-image
             className={cn(
-              'object-contain object-center p-4 transition-transform duration-500 ease-out group-hover:scale-105',
+              'object-contain object-center p-4 transition-[transform,opacity] duration-[800ms] ease-[cubic-bezier(0.25,1,0.5,1)] group-hover:scale-110',
+              isLoaded ? 'opacity-100' : 'opacity-0',
               outOfStock && 'opacity-45 grayscale-[0.7]',
             )}
             sizes={
@@ -308,7 +318,7 @@ export const ProductCard = React.memo(function ProductCard({
         </div>
 
         <Link href={`/products/${product.slug}`} className="block">
-          <p className="line-clamp-2 text-[14px] font-semibold leading-[1.45] tracking-[-0.01em] text-[color:var(--shop-ink)] lg:text-[15px]">
+          <p className="line-clamp-2 text-[15px] font-bold leading-[1.45] tracking-[-0.01em] text-[color:var(--shop-ink)]">
             {product.name}
           </p>
         </Link>

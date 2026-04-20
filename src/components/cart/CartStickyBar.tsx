@@ -1,6 +1,6 @@
 'use client'
 
-import { PrimaryCheckoutButton } from '@/components/checkout'
+import { ArrowRight } from 'lucide-react'
 import { formatINR } from '@/lib/utils'
 
 interface CartStickyBarProps {
@@ -15,43 +15,28 @@ interface CartStickyBarProps {
 export function CartStickyBar({
     itemCount,
     total,
-    savings = 0,
     onCheckout,
     disabled = false,
     loading = false,
 }: CartStickyBarProps) {
     return (
-        <div className="fixed inset-x-0 bottom-0 z-[220] border-t border-white/70 bg-white/88 px-4 py-3 shadow-[0_-18px_32px_rgba(15,23,42,0.10)] backdrop-blur-xl lg:hidden">
-            <div className="mx-auto max-w-2xl space-y-3">
-                <div className="rounded-[22px] border border-white/70 bg-[linear-gradient(180deg,#FFFFFF_0%,#FBF8F2_100%)] px-4 py-3.5 shadow-[0_10px_22px_rgba(15,23,42,0.05)]">
-                    <div className="flex items-end justify-between gap-3">
-                        <div aria-live="polite">
-                            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#98A0A8]">
-                                Basket total
-                            </p>
-                            <p className="mt-1 text-[24px] font-extrabold tracking-tight text-[#16202A]">
-                                {formatINR(total)}
-                            </p>
-                            {savings > 0 && (
-                                <p className="mt-1 text-xs font-semibold text-[#166534]">
-                                    You save {formatINR(savings)}
-                                </p>
-                            )}
-                        </div>
-
-                        <p className="text-xs font-medium text-[#6B7280]">
-                            {itemCount} item{itemCount !== 1 ? 's' : ''}
-                        </p>
-                    </div>
+        <div className="fixed inset-x-0 bottom-0 z-[220] border-t border-[color:var(--shop-border)] bg-white px-4 py-3 shadow-[0_-12px_24px_rgba(15,23,42,0.08)] lg:hidden">
+            <div className="mx-auto flex max-w-2xl items-center justify-between gap-3">
+                <div aria-live="polite" className="min-w-0">
+                    <p className="truncate text-sm font-semibold text-[color:var(--shop-ink)]">
+                        {formatINR(total)} {'\u00B7'} {itemCount} item{itemCount !== 1 ? 's' : ''}
+                    </p>
                 </div>
 
-                <PrimaryCheckoutButton
-                    label="🔒 Secure Checkout"
+                <button
+                    type="button"
                     onClick={onCheckout}
-                    disabled={disabled}
-                    loading={loading}
-                    className="h-12 rounded-[18px] text-sm"
-                />
+                    disabled={disabled || loading}
+                    className="inline-flex h-11 shrink-0 items-center justify-center gap-2 rounded-[14px] bg-[color:var(--shop-action)] px-5 text-sm font-semibold text-white transition-colors hover:bg-[color:var(--shop-action-hover)] disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                    {loading ? 'Loading...' : 'Checkout'}
+                    {!loading && <ArrowRight className="h-4 w-4" />}
+                </button>
             </div>
         </div>
     )

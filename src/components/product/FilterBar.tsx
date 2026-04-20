@@ -28,15 +28,15 @@ export function FilterBar({
     const hasActiveFilters = inStock || sort !== 'relevance'
 
     return (
-        <div className="sticky top-[88px] z-[50] mb-5">
-            <div className="overflow-x-auto rounded-[20px] border border-black/[0.06] bg-white/95 px-3 py-3 shadow-sm backdrop-blur-sm sm:px-4">
+        <div className="sticky top-[130px] z-[50] mb-5 lg:top-[108px]">
+            <div className="overflow-x-auto rounded-[20px] border border-[color:var(--shop-border)] bg-[color:var(--shop-surface)]/95 px-3 py-3 shadow-[var(--shop-shadow-level-1)] backdrop-blur-sm sm:px-4 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
                 <div className="flex min-w-max items-center gap-2.5">
-                    <div className="flex items-center gap-2 rounded-full border border-[#E5E7EB] bg-white px-3 py-2">
-                        <ArrowUpDown className="h-4 w-4 text-[#6B7280]" strokeWidth={1.5} />
+                    <div className="flex items-center gap-2 rounded-full border border-[color:var(--shop-border)] bg-white px-3 py-2">
+                        <ArrowUpDown className="h-4 w-4 text-[color:var(--shop-ink-muted)]" strokeWidth={1.5} />
                         <select
                             value={sort}
                             onChange={(event) => onSortChange(event.target.value)}
-                            className="bg-transparent text-sm font-medium text-[#1F2937] outline-none"
+                            className="bg-transparent text-sm font-medium text-[color:var(--shop-ink)] outline-none"
                             aria-label="Sort products"
                         >
                             {SORT_OPTIONS.map((option) => (
@@ -53,8 +53,8 @@ export function FilterBar({
                         className={cn(
                             'inline-flex h-10 items-center rounded-full border px-4 text-sm font-semibold transition-colors',
                             inStock
-                                ? 'border-gray-900 bg-gray-900 text-white'
-                                : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300',
+                                ? 'border-[color:var(--shop-primary)] bg-[color:var(--shop-primary)] text-white'
+                                : 'border-[color:var(--shop-border)] bg-white text-[color:var(--shop-ink-muted)] hover:border-[color:var(--shop-primary-soft)] hover:text-[color:var(--shop-ink)]',
                         )}
                         aria-pressed={inStock}
                     >
@@ -68,15 +68,15 @@ export function FilterBar({
                                 onSortChange('relevance')
                                 onInStockChange(false)
                             }}
-                            className="ml-1 text-sm font-semibold text-[#6B7280] transition-colors hover:text-[#111827]"
+                            className="ml-1 text-sm font-semibold text-[color:var(--shop-ink-muted)] transition-colors hover:text-[color:var(--shop-ink)]"
                         >
                             Clear all
                         </button>
                     )}
 
                     {typeof resultCount === 'number' && (
-                        <div className="ml-auto inline-flex items-center gap-1.5 rounded-full bg-[#F5F7F6] px-3 py-2 text-sm font-medium text-[#4B5563]">
-                            <Sparkles className="h-4 w-4 text-[#22C55E]" strokeWidth={1.5} />
+                        <div className="ml-auto inline-flex items-center gap-1.5 rounded-full bg-[color:var(--shop-surface-subtle)] px-3 py-2 text-sm font-medium text-[color:var(--shop-ink-muted)]">
+                            <Sparkles className="h-4 w-4 text-[color:var(--shop-action)]" strokeWidth={1.5} />
                             {resultCount} products
                         </div>
                     )}

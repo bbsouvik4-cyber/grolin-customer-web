@@ -11,11 +11,11 @@ export function HeaderWishlistButton() {
   return (
     <Link
       href="/wishlist"
-      className="relative flex h-11 w-11 items-center justify-center rounded-full border border-[rgba(17,24,39,0.08)] bg-white text-[color:var(--shop-ink)] transition-colors hover:border-[rgba(75,0,130,0.18)] hover:text-[color:var(--shop-primary)] active:scale-95"
+      className="group/wish relative flex h-10 w-10 items-center justify-center rounded-full border border-[color:var(--shop-border)] bg-[color:var(--shop-surface)] text-[color:var(--shop-ink-muted)] shadow-[0_1px_3px_rgba(0,0,0,0.06)] transition-all duration-250 ease-[cubic-bezier(0.25,0.46,0.45,0.94)] hover:border-[#EF446E]/25 hover:bg-[#EF446E]/8 hover:text-[#EF446E] hover:shadow-[0_4px_16px_rgba(239,68,110,0.12)] hover:scale-[1.05] active:scale-[0.96]"
       aria-label={`Wishlist (${display} items)`}
     >
-      <Heart className="h-[18px] w-[18px]" strokeWidth={1.8} />
-      <span className="absolute -left-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-[color:var(--shop-accent)] px-1 text-[10px] font-bold leading-none text-[#241D05]">
+      <Heart className="h-[18px] w-[18px] transition-transform duration-300 group-hover/wish:scale-110 group-hover/wish:animate-[heart-beat_600ms_ease-in-out]" strokeWidth={1.8} />
+      <span className="absolute -right-1.5 -top-1.5 flex h-[20px] min-w-[20px] items-center justify-center rounded-full bg-[linear-gradient(135deg,#EF446E_0%,#F472B6_100%)] px-1 text-[10px] font-black leading-none text-white shadow-[0_2px_6px_rgba(239,68,110,0.30)]">
         {display}
       </span>
     </Link>

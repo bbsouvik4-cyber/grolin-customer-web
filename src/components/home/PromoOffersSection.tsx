@@ -9,8 +9,8 @@ import { SHOPFRONT_CAMPAIGN_COPY } from '@/lib/shopfront/shopfront-content'
 import type { Banner } from '@/types/banner.types'
 
 const CARD_FALLBACKS = [
-  'linear-gradient(135deg, #7251D8 0%, #8C6BE7 62%, #3B936A 100%)',
-  'linear-gradient(135deg, #8E60D9 0%, #D387C8 100%)',
+  'linear-gradient(135deg, color-mix(in srgb, var(--shop-primary) 68%, white 32%) 0%, color-mix(in srgb, var(--shop-primary) 56%, var(--shop-action) 44%) 100%)',
+  'linear-gradient(135deg, color-mix(in srgb, var(--shop-primary) 64%, white 36%) 0%, color-mix(in srgb, var(--shop-danger) 20%, var(--shop-primary) 80%) 100%)',
 ]
 
 const STRIP_FALLBACK =

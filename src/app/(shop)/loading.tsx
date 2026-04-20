@@ -1,46 +1,42 @@
 import { Skeleton } from '@/components/ui/skeleton'
-
+import { CategoryRowSkeleton } from '@/components/home/CategoryRowSkeleton'
 
 export default function HomeLoading() {
-    return (
-        <div className="space-y-8 pb-16">
-            {/* Banner skeleton */}
-            <div className="px-6 pt-4">
-                <Skeleton className="h-[180px] sm:h-[220px] w-full rounded-2xl" />
-            </div>
+  return (
+    <div className="space-y-8 pb-16">
+      {/* Banner skeleton */}
+      <div className="px-4 pt-4 sm:px-6">
+        <Skeleton className="h-[180px] w-full rounded-[22px] sm:h-[220px]" />
+      </div>
 
-            {/* Categories skeleton */}
-            <div className="px-6">
-                <Skeleton className="h-6 w-32 mb-4 rounded" />
-                <div className="flex gap-3 overflow-hidden">
-                    {Array.from({ length: 8 }).map((_, i) => (
-                        <div key={i} className="flex flex-col items-center gap-2 flex-shrink-0">
-                            <Skeleton className="w-[88px] h-[88px] rounded-2xl" />
-                            <Skeleton className="h-3 w-12 rounded" />
-                        </div>
-                    ))}
-                </div>
-            </div>
+      {/* Categories skeleton */}
+      <div className="px-4 sm:px-6">
+        <Skeleton className="mb-4 h-6 w-32 rounded-full" />
+        <CategoryRowSkeleton />
+      </div>
 
-            {/* Product sections skeleton */}
-            <div className="px-6">
-                <Skeleton className="h-6 w-40 mb-4 rounded" />
-                <div className="flex gap-3 overflow-hidden">
-                    {Array.from({ length: 5 }).map((_, i) => (
-                        <div key={i} className="flex-shrink-0 w-[180px]">
-                            <div className="bg-white rounded-2xl border border-gray-100 p-3 space-y-3">
-                                <Skeleton className="h-[140px] w-full rounded-xl" />
-                                <Skeleton className="h-4 w-4/5 rounded" />
-                                <Skeleton className="h-3 w-1/3 rounded" />
-                                <div className="flex items-center justify-between">
-                                    <Skeleton className="h-5 w-16 rounded" />
-                                    <Skeleton className="h-8 w-8 rounded-full" />
-                                </div>
-                            </div>
-                        </div>
-                    ))}
-                </div>
-            </div>
+      {/* Product section skeleton */}
+      <div className="px-4 sm:px-6">
+        <div className="mb-4 flex items-center justify-between">
+          <Skeleton className="h-6 w-40 rounded-full" />
+          <Skeleton className="h-4 w-16 rounded-full" />
         </div>
-    )
+        <div className="flex gap-3 overflow-hidden">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <div key={i} className="w-[160px] shrink-0">
+              <div className="overflow-hidden rounded-[22px] border border-[color:var(--shop-border)] bg-[color:var(--shop-surface)] shadow-[var(--shop-shadow-level-1)]">
+                <Skeleton className="h-[148px] w-full rounded-none" />
+                <div className="space-y-2 p-3">
+                  <Skeleton className="h-4 w-4/5 rounded-full" />
+                  <Skeleton className="h-3 w-1/3 rounded-full" />
+                  <Skeleton className="h-5 w-1/2 rounded-full" />
+                  <Skeleton className="h-9 w-full rounded-[10px]" />
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  )
 }

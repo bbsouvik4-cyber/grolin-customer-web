@@ -1,49 +1,76 @@
 'use client'
 
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { useQuery } from '@tanstack/react-query'
-import { categoriesService } from '@/services/categories.service'
-import { QUERY_KEYS, STALE_TIMES } from '@/lib/constants'
-import { EmptyStateCard, PageHeader, PageShell } from '@/components/shared'
-import type { Category } from '@/types/product.types'
-import { useEffect } from 'react'
 import { LayoutGrid } from 'lucide-react'
+import { EmptyStateCard, PageHeader, PageShell } from '@/components/shared'
+import { QUERY_KEYS, STALE_TIMES } from '@/lib/constants'
+import { getCategoryImageSrc } from '@/lib/media'
+import { categoriesService } from '@/services/categories.service'
+import type { Category } from '@/types/product.types'
 
-// ── Gradient + emoji map ──
-const CATEGORY_STYLES: Record<string, { gradient: string; emoji: string }> = {
-    fruits: { gradient: 'from-orange-100 to-orange-200', emoji: '🍎' },
-    vegetables: { gradient: 'from-green-100 to-green-200', emoji: '🥦' },
-    dairy: { gradient: 'from-blue-100 to-blue-200', emoji: '🥛' },
-    snacks: { gradient: 'from-yellow-100 to-amber-100', emoji: '🍫' },
-    drinks: { gradient: 'from-sky-100 to-blue-100', emoji: '🥤' },
-    beverages: { gradient: 'from-sky-100 to-blue-100', emoji: '🥤' },
-    coffee: { gradient: 'from-amber-100 to-orange-200', emoji: '☕' },
-    meat: { gradient: 'from-rose-100 to-pink-100', emoji: '🥩' },
-    bakery: { gradient: 'from-amber-50 to-amber-100', emoji: '🍞' },
-    frozen: { gradient: 'from-blue-50 to-blue-100', emoji: '🧊' },
-    personal: { gradient: 'from-violet-100 to-purple-100', emoji: '🧴' },
-    household: { gradient: 'from-teal-50 to-sky-100', emoji: '🏠' },
-    organic: { gradient: 'from-emerald-100 to-green-100', emoji: '🌿' },
-    spices: { gradient: 'from-orange-100 to-red-100', emoji: '🌶️' },
-    rice: { gradient: 'from-yellow-50 to-amber-50', emoji: '🍚' },
-    oil: { gradient: 'from-yellow-100 to-amber-100', emoji: '🫒' },
-    fish: { gradient: 'from-blue-100 to-cyan-100', emoji: '🐟' },
-    baby: { gradient: 'from-pink-100 to-rose-100', emoji: '👶' },
-    default: { gradient: 'from-gray-100 to-gray-200', emoji: '🛒' },
+const CATEGORY_STYLES: Record<string, { gradient: string }> = {
+    fruits: { gradient: 'from-orange-100 to-orange-200' },
+    vegetables: { gradient: 'from-green-100 to-green-200' },
+    dairy: { gradient: 'from-blue-100 to-blue-200' },
+    snacks: { gradient: 'from-yellow-100 to-amber-100' },
+    drinks: { gradient: 'from-sky-100 to-blue-100' },
+    beverages: { gradient: 'from-sky-100 to-blue-100' },
+    coffee: { gradient: 'from-amber-100 to-orange-200' },
+    meat: { gradient: 'from-rose-100 to-pink-100' },
+    bakery: { gradient: 'from-amber-50 to-amber-100' },
+    frozen: { gradient: 'from-blue-50 to-blue-100' },
+    personal: { gradient: 'from-violet-100 to-purple-100' },
+    household: { gradient: 'from-teal-50 to-sky-100' },
+    organic: { gradient: 'from-emerald-100 to-green-100' },
+    spices: { gradient: 'from-orange-100 to-red-100' },
+    rice: { gradient: 'from-yellow-50 to-amber-50' },
+    oil: { gradient: 'from-yellow-100 to-amber-100' },
+    fish: { gradient: 'from-blue-100 to-cyan-100' },
+    baby: { gradient: 'from-pink-100 to-rose-100' },
+    default: { gradient: 'from-gray-100 to-gray-200' },
 }
 
-function getStyle(name: string) {
+function getStyle(name: string): { gradient: string } {
     const lower = name.toLowerCase()
     for (const [key, val] of Object.entries(CATEGORY_STYLES)) {
         if (lower.includes(key)) return val
     }
-    return CATEGORY_STYLES['default']!
+    return CATEGORY_STYLES.default!
+}
+
+function CategoryDirectoryImage({ category }: { category: Category }) {
+    const [imageFailed, setImageFailed] = useState(false)
+    const imageSrc = getCategoryImageSrc(category)
+
+    useEffect(() => {
+        setImageFailed(false)
+    }, [imageSrc])
+
+    if (!imageSrc || imageFailed) {
+        return null
+    }
+
+    return (
+        <div className="relative h-10 w-10">
+            <Image
+                src={imageSrc}
+                alt={category.name}
+                fill
+                unoptimized
+                onError={() => setImageFailed(true)}
+                className="object-contain"
+                sizes="40px"
+            />
+        </div>
+    )
 }
 
 export default function CategoriesPage() {
     useEffect(() => {
-        document.title = 'Categories — Grolin'
+        document.title = 'Categories - Grolin'
     }, [])
 
     const { data: allCategories = [], isLoading } = useQuery({
@@ -52,9 +79,7 @@ export default function CategoriesPage() {
         staleTime: STALE_TIMES.categories,
     })
 
-    const categories = allCategories.filter(
-        (c: Category) => c.is_active && !c.parent_id,
-    )
+    const categories = allCategories.filter((category: Category) => category.is_active && !category.parent_id)
 
     return (
         <PageShell spacing="relaxed">
@@ -71,24 +96,21 @@ export default function CategoriesPage() {
             <section className="shop-surface-soft rounded-[30px] p-5 sm:p-6">
                 <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
                     <div>
-                        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[color:var(--shop-ink-muted)]">
-                            Curated aisles
-                        </p>
+                        <p className="eyebrow">Curated aisles</p>
                         <p className="mt-2 text-sm text-[color:var(--shop-ink-muted)]">
                             Explore fresh produce, pantry staples, and household essentials.
                         </p>
                     </div>
-                    <div className="inline-flex items-center gap-2 rounded-full border border-[color:var(--shop-border)] bg-white/86 px-4 py-2 text-sm font-semibold text-[color:var(--shop-ink)] shadow-[0_8px_18px_rgba(15,23,42,0.05)]">
+                    <div className="inline-flex items-center gap-2 rounded-full border border-[color:var(--shop-border)] bg-[color:var(--shop-surface)] px-4 py-2 text-sm font-semibold text-[color:var(--shop-ink)] shadow-[var(--shop-shadow-level-1)]">
                         <LayoutGrid className="h-4 w-4 text-[color:var(--shop-primary)]" />
                         {isLoading ? 'Loading' : `${categories.length} categories`}
                     </div>
                 </div>
 
-            {/* Grid */}
                 {isLoading ? (
                     <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
-                        {Array.from({ length: 12 }).map((_, i) => (
-                            <div key={i} className="skeleton-shimmer h-[132px] rounded-[24px]" />
+                        {Array.from({ length: 12 }).map((_, index) => (
+                            <div key={index} className="skeleton-shimmer h-[132px] rounded-[24px]" />
                         ))}
                     </div>
                 ) : categories.length === 0 ? (
@@ -101,38 +123,29 @@ export default function CategoriesPage() {
                     />
                 ) : (
                     <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
-                        {categories.map((cat, i) => {
-                            const style = getStyle(cat.name)
+                        {categories.map((category, index) => {
+                            const style = getStyle(category.name)
+
                             return (
                                 <Link
-                                    key={cat.id}
-                                    href={`/categories/${cat.id}`}
-                                    className={`group relative h-[132px] overflow-hidden rounded-[24px] bg-gradient-to-br ${style.gradient} transition-all duration-200 hover:-translate-y-1 hover:shadow-[0_14px_30px_rgba(15,23,42,0.10)] active:scale-[0.98]`}
-                                    style={{ animationDelay: `${i * 40}ms` }}
+                                    key={category.id}
+                                    href={`/categories/${category.id}`}
+                                    className={`group relative h-[140px] overflow-hidden rounded-[22px] bg-gradient-to-br ${style.gradient} shadow-[var(--shop-shadow-level-1)] transition-all duration-200 hover:-translate-y-[4px] hover:shadow-[var(--shop-shadow-level-2)] active:scale-[0.98]`}
+                                    style={{ animationDelay: `${index * 40}ms` }}
                                 >
                                     <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.08)_0%,rgba(17,24,39,0.04)_100%)]" />
                                     <div className="relative flex h-full flex-col justify-between p-4">
                                         <div>
-                                            <p className="text-[16px] font-bold text-[color:var(--shop-ink)] transition-colors group-hover:text-[color:var(--shop-primary)]">
-                                                {cat.name}
+                                            <p className="text-[15px] font-bold leading-tight tracking-[-0.01em] text-[color:var(--shop-ink)] transition-colors group-hover:text-[color:var(--shop-primary)]">
+                                                {category.name}
                                             </p>
-                                            <p className="mt-1 text-xs text-[color:var(--shop-ink-muted)]">
-                                                {cat.product_count ?? 0} items
+                                            <p className="mt-1 text-[12px] font-medium text-[color:var(--shop-ink-muted)]">
+                                                {category.product_count ?? 0} items
                                             </p>
                                         </div>
-                                        {cat.image_url ? (
-                                            <Image
-                                                src={cat.image_url}
-                                                alt={cat.name}
-                                                width={40}
-                                                height={40}
-                                                className="object-contain"
-                                            />
-                                        ) : null}
+
+                                        <CategoryDirectoryImage category={category} />
                                     </div>
-                                    <span className="pointer-events-none absolute -bottom-3 -right-3 rotate-[15deg] select-none text-[80px] leading-none opacity-15">
-                                        {style.emoji}
-                                    </span>
                                 </Link>
                             )
                         })}

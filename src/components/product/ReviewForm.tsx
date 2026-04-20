@@ -3,7 +3,7 @@
 import { useMemo, useState } from 'react'
 import { AxiosError } from 'axios'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { AnimatePresence, motion } from 'framer-motion'
+import { AnimatePresence, m } from 'framer-motion'
 import { Loader2, X } from 'lucide-react'
 import { toast } from 'sonner'
 import { reviewsService } from '@/services/reviews.service'
@@ -61,14 +61,14 @@ export function ReviewForm({ isOpen, onClose, productId, productName, orderId }:
     return (
         <AnimatePresence>
             {isOpen && (
-                <motion.div
+                <m.div
                     className="fixed inset-0 z-[320] bg-black/30 backdrop-blur-sm"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
                     onClick={onClose}
                 >
-                    <motion.div
+                    <m.div
                         className="absolute bottom-0 left-0 right-0 max-h-[80vh] overflow-y-auto rounded-t-[24px] bg-white p-5"
                         initial={{ y: '100%' }}
                         animate={{ y: 0 }}
@@ -116,8 +116,8 @@ export function ReviewForm({ isOpen, onClose, productId, productName, orderId }:
                                 'Submit Review'
                             )}
                         </button>
-                    </motion.div>
-                </motion.div>
+                    </m.div>
+                </m.div>
             )}
         </AnimatePresence>
     )

@@ -1,12 +1,13 @@
-'use client'
+﻿'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import Image from 'next/image'
 import { ChevronLeft, ChevronRight, Search, Sparkles, X } from 'lucide-react'
 import { WishlistButton } from '@/components/product/WishlistButton'
 import { ShareButton } from '@/components/shared/ShareButton'
-import { discountPercent } from '@/lib/utils'
 import { useRecentlyViewed } from '@/hooks/useRecentlyViewed'
+import { PRODUCT_IMAGE_PLACEHOLDER, getProductGalleryImages } from '@/lib/media'
+import { discountPercent } from '@/lib/utils'
 import type { Product } from '@/types/product.types'
 
 interface ProductGalleryProps {
@@ -16,15 +17,21 @@ interface ProductGalleryProps {
 export function ProductGallery({ product }: ProductGalleryProps) {
     const [activeIdx, setActiveIdx] = useState(0)
     const [zoomOpen, setZoomOpen] = useState(false)
+    const [failedImages, setFailedImages] = useState<Record<string, boolean>>({})
     const { addViewed } = useRecentlyViewed()
 
     useEffect(() => {
         if (product?.id) addViewed(product.id)
     }, [product?.id, addViewed])
 
-    const images =
-        product.images?.length > 0 ? product.images : [product.thumbnail_url || '/placeholder-product.svg']
-    const mainImage = images[activeIdx] || images[0] || '/placeholder-product.svg'
+    const images = useMemo(() => getProductGalleryImages(product), [product])
+    const mainImage = images[activeIdx] || images[0] || PRODUCT_IMAGE_PLACEHOLDER
+    const mainImageSrc = failedImages[mainImage] ? PRODUCT_IMAGE_PLACEHOLDER : mainImage
+
+    useEffect(() => {
+        setActiveIdx(0)
+        setFailedImages({})
+    }, [product.id, images.length])
 
     const salePrice = product.sale_price ?? product.salePrice ?? null
     const isOnSale = salePrice !== null && salePrice < product.price
@@ -36,15 +43,18 @@ export function ProductGallery({ product }: ProductGalleryProps) {
 
     const prevImage = () => setActiveIdx((idx) => (idx > 0 ? idx - 1 : images.length - 1))
     const nextImage = () => setActiveIdx((idx) => (idx < images.length - 1 ? idx + 1 : 0))
+    const markFailed = (src: string) => setFailedImages((prev) => ({ ...prev, [src]: true }))
 
     return (
         <>
-            <div className="group relative overflow-hidden rounded-[28px] border border-[color:var(--shop-border)] bg-[linear-gradient(180deg,rgba(255,255,255,0.96)_0%,rgba(248,245,239,0.98)_100%)] shadow-[var(--shop-shadow-soft)]">
+            <div className="group relative overflow-hidden rounded-[28px] border border-[color:var(--shop-border)] bg-[color:var(--shop-surface)] shadow-[var(--shop-shadow-soft)]">
                 <div className="relative h-[300px] w-full sm:h-[400px] lg:h-[450px]">
                     <Image
-                        src={mainImage}
+                        src={mainImageSrc}
                         alt={product.name}
                         fill
+                        onError={() => markFailed(mainImage)}
+                        unoptimized={mainImageSrc.startsWith('http')}
                         className="object-contain p-8"
                         priority
                         sizes="(max-width: 768px) 100vw, 55vw"
@@ -85,7 +95,7 @@ export function ProductGallery({ product }: ProductGalleryProps) {
                         />
                     </div>
 
-                    <div className="absolute bottom-4 right-4 z-10 hidden items-center gap-1.5 rounded-full bg-white/85 px-3 py-1.5 text-[11px] font-medium text-gray-500 shadow-sm backdrop-blur md:flex">
+                    <div className="absolute bottom-4 right-4 z-10 hidden items-center gap-1.5 rounded-full bg-[color:var(--shop-surface)]/85 px-3 py-1.5 text-[11px] font-medium text-[color:var(--shop-ink-muted)] shadow-sm backdrop-blur md:flex">
                         <Search className="h-3.5 w-3.5" strokeWidth={1.8} />
                         Click to zoom
                     </div>
@@ -98,7 +108,7 @@ export function ProductGallery({ product }: ProductGalleryProps) {
                                     event.stopPropagation()
                                     prevImage()
                                 }}
-                                className="absolute left-3 top-1/2 z-10 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-[color:var(--shop-border)] bg-white/80 text-[color:var(--shop-ink-muted)] opacity-0 backdrop-blur transition-opacity hover:bg-white group-hover:opacity-100"
+                                className="absolute left-3 top-1/2 z-10 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-[color:var(--shop-border)] bg-[color:var(--shop-surface)]/80 text-[color:var(--shop-ink-muted)] opacity-0 backdrop-blur transition-opacity hover:bg-[color:var(--shop-surface)] group-hover:opacity-100"
                                 aria-label="Previous product image"
                             >
                                 <ChevronLeft className="h-4 w-4" strokeWidth={1.5} />
@@ -109,7 +119,7 @@ export function ProductGallery({ product }: ProductGalleryProps) {
                                     event.stopPropagation()
                                     nextImage()
                                 }}
-                                className="absolute right-3 top-1/2 z-10 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-[color:var(--shop-border)] bg-white/80 text-[color:var(--shop-ink-muted)] opacity-0 backdrop-blur transition-opacity hover:bg-white group-hover:opacity-100"
+                                className="absolute right-3 top-1/2 z-10 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-[color:var(--shop-border)] bg-[color:var(--shop-surface)]/80 text-[color:var(--shop-ink-muted)] opacity-0 backdrop-blur transition-opacity hover:bg-[color:var(--shop-surface)] group-hover:opacity-100"
                                 aria-label="Next product image"
                             >
                                 <ChevronRight className="h-4 w-4" strokeWidth={1.5} />
@@ -121,27 +131,35 @@ export function ProductGallery({ product }: ProductGalleryProps) {
 
             {images.length > 1 && (
                 <div className="scrollbar-hide mt-3 flex gap-2 overflow-x-auto">
-                    {images.slice(0, 5).map((img, index) => (
-                        <button
-                            key={`${img}-${index}`}
-                            type="button"
-                            onClick={() => setActiveIdx(index)}
-                            className={`h-16 w-16 flex-shrink-0 overflow-hidden rounded-xl border-2 transition-colors ${
-                                activeIdx === index
-                                    ? 'border-[color:var(--shop-primary)] shadow-[0_0_0_2px_rgba(34,197,94,0.15)]'
-                                    : 'border-[color:var(--shop-border)] hover:border-[#CDD7D3]'
-                            }`}
-                            aria-label={`Show image ${index + 1}`}
-                        >
-                            <Image
-                                src={img}
-                                alt={`${product.name} ${index + 1}`}
-                                width={64}
-                                height={64}
-                                className="object-contain p-1"
-                            />
-                        </button>
-                    ))}
+                    {images.slice(0, 5).map((img, index) => {
+                        const thumbSrc = failedImages[img] ? PRODUCT_IMAGE_PLACEHOLDER : img
+
+                        return (
+                            <button
+                                key={`${img}-${index}`}
+                                type="button"
+                                onClick={() => setActiveIdx(index)}
+                                className={`h-16 w-16 flex-shrink-0 overflow-hidden rounded-xl border-2 transition-colors ${
+                                    activeIdx === index
+                                        ? 'border-[color:var(--shop-primary)] shadow-[0_0_0_2px_rgba(34,197,94,0.15)]'
+                                        : 'border-[color:var(--shop-border)] hover:border-[color:var(--shop-primary-soft)]'
+                                }`}
+                                aria-label={`Show image ${index + 1}`}
+                            >
+                                <span className="relative block h-full w-full">
+                                    <Image
+                                        src={thumbSrc}
+                                        alt={`${product.name} ${index + 1}`}
+                                        fill
+                                        onError={() => markFailed(img)}
+                                        unoptimized={thumbSrc.startsWith('http')}
+                                        className="object-contain p-1"
+                                        sizes="64px"
+                                    />
+                                </span>
+                            </button>
+                        )
+                    })}
                 </div>
             )}
 
@@ -163,9 +181,11 @@ export function ProductGallery({ product }: ProductGalleryProps) {
                         </div>
                         <div className="relative flex-1 overflow-hidden rounded-[28px] border border-white/10 bg-white/5">
                             <Image
-                                src={mainImage}
+                                src={mainImageSrc}
                                 alt={product.name}
                                 fill
+                                onError={() => markFailed(mainImage)}
+                                unoptimized={mainImageSrc.startsWith('http')}
                                 className="object-contain p-6"
                                 sizes="100vw"
                             />

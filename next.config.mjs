@@ -6,6 +6,8 @@ const nextConfig = {
             { protocol: 'https', hostname: '**.cloudinary.com', pathname: '/**' },
             { protocol: 'https', hostname: 'cdn.dribbble.com', pathname: '/**' },
             { protocol: 'https', hostname: 'grolin.in', pathname: '/**' },
+            { protocol: 'https', hostname: 'grocery-api.shotlin.in', pathname: '/**' },
+            { protocol: 'https', hostname: '**.shotlin.in', pathname: '/**' },
             { protocol: 'http', hostname: 'localhost', pathname: '/**' },
         ],
         formats: ['image/avif', 'image/webp'],

@@ -7,16 +7,40 @@ interface EmptyStateProps {
     subtitle: string
     ctaLabel?: string
     ctaHref?: string
+    ctaAction?: () => void
+    secondaryCtaLabel?: string
+    secondaryCtaHref?: string
+    secondaryCtaAction?: () => void
+    iconBg?: string
+    iconColor?: string
 }
 
-export function EmptyState({ icon: Icon, title, subtitle, ctaLabel, ctaHref }: EmptyStateProps) {
+export function EmptyState({
+    icon,
+    title,
+    subtitle,
+    ctaLabel,
+    ctaHref,
+    ctaAction,
+    secondaryCtaLabel,
+    secondaryCtaHref,
+    secondaryCtaAction,
+    iconBg,
+    iconColor,
+}: EmptyStateProps) {
     return (
         <EmptyStateCard
-            icon={Icon}
+            icon={icon}
             title={title}
             subtitle={subtitle}
             ctaLabel={ctaLabel}
             ctaHref={ctaHref}
+            ctaAction={ctaAction}
+            secondaryCtaLabel={secondaryCtaLabel}
+            secondaryCtaHref={secondaryCtaHref}
+            secondaryCtaAction={secondaryCtaAction}
+            iconBg={iconBg}
+            iconColor={iconColor}
         />
     )
 }

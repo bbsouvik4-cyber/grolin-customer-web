@@ -1,4 +1,5 @@
 import Image from 'next/image'
+import { getImageUrl } from '@/lib/media'
 import { formatINR } from '@/lib/utils'
 
 interface OrderItem {
@@ -21,11 +22,12 @@ export function OrderItemsList({ items }: OrderItemsListProps) {
                 <div key={i} className="flex items-center gap-3 rounded-xl bg-gray-50 p-3">
                     <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-lg bg-white">
                         <Image
-                            src={item.image || item.thumbnail_url || '/placeholder-product.svg'}
+                            src={getImageUrl(item.image || item.thumbnail_url)}
                             alt={item.name}
                             fill
                             className="object-contain p-1"
                             sizes="48px"
+                            unoptimized
                         />
                     </div>
                     <div className="min-w-0 flex-1">

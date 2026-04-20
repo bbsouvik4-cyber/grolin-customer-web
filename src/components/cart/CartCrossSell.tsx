@@ -2,7 +2,7 @@
 
 import { useRef } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { motion } from 'framer-motion'
+import { m } from 'framer-motion'
 import { useInView } from 'react-intersection-observer'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { ProductCard } from '@/components/product/ProductCard'
@@ -76,7 +76,7 @@ export function CartCrossSell({ productIds, cartProductIds }: CartCrossSellProps
                         <button
                             type="button"
                             onClick={() => scroll('left')}
-                            className="flex h-10 w-10 items-center justify-center rounded-full border border-white/80 bg-white text-[#68737E] transition-colors hover:border-[rgba(104,72,198,0.16)] hover:text-[color:var(--shop-primary)]"
+                            className="flex h-10 w-10 items-center justify-center rounded-full border border-white/80 bg-white text-[color:var(--shop-ink-muted)] transition-colors hover:border-[rgba(104,72,198,0.16)] hover:text-[color:var(--shop-primary)]"
                             aria-label="Scroll cross-sell products left"
                         >
                             <ChevronLeft className="h-4 w-4" />
@@ -84,7 +84,7 @@ export function CartCrossSell({ productIds, cartProductIds }: CartCrossSellProps
                         <button
                             type="button"
                             onClick={() => scroll('right')}
-                            className="flex h-10 w-10 items-center justify-center rounded-full border border-white/80 bg-white text-[#68737E] transition-colors hover:border-[rgba(104,72,198,0.16)] hover:text-[color:var(--shop-primary)]"
+                            className="flex h-10 w-10 items-center justify-center rounded-full border border-white/80 bg-white text-[color:var(--shop-ink-muted)] transition-colors hover:border-[rgba(104,72,198,0.16)] hover:text-[color:var(--shop-primary)]"
                             aria-label="Scroll cross-sell products right"
                         >
                             <ChevronRight className="h-4 w-4" />
@@ -103,7 +103,7 @@ export function CartCrossSell({ productIds, cartProductIds }: CartCrossSellProps
                     ))}
 
                 {!isLoading && (
-                    <motion.div
+                    <m.div
                         initial="hidden"
                         animate="show"
                         variants={{
@@ -117,7 +117,7 @@ export function CartCrossSell({ productIds, cartProductIds }: CartCrossSellProps
                         className="flex gap-3 sm:gap-4"
                     >
                         {products.map((product, index) => (
-                            <motion.div
+                            <m.div
                                 key={product.id}
                                 variants={{
                                     hidden: { opacity: 0, y: 20 },
@@ -130,9 +130,9 @@ export function CartCrossSell({ productIds, cartProductIds }: CartCrossSellProps
                                     priority={index < 4}
                                     variant="section"
                                 />
-                            </motion.div>
+                            </m.div>
                         ))}
-                    </motion.div>
+                    </m.div>
                 )}
             </div>
         </section>

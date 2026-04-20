@@ -2,10 +2,13 @@ import type { Metadata } from 'next'
 import { Plus_Jakarta_Sans } from 'next/font/google'
 import './globals.css'
 import { Providers } from '@/providers/Providers'
+import { ScrollReveal } from '@/components/ui/ScrollReveal'
+import { MotionProvider } from '@/components/ui/MotionProvider'
 
 const plusJakartaSans = Plus_Jakarta_Sans({
   subsets: ['latin'],
   weight: ['400', '500', '600', '700', '800'],
+  variable: '--font-plus-jakarta',
 })
 
 export const metadata: Metadata = {
@@ -32,8 +35,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${plusJakartaSans.className} min-h-screen antialiased`}>
-        <Providers>{children}</Providers>
+      <body className={`${plusJakartaSans.variable} ${plusJakartaSans.className} min-h-screen antialiased`}>
+        <MotionProvider>
+          <Providers>{children}</Providers>
+        </MotionProvider>
+        <ScrollReveal />
       </body>
     </html>
   )

@@ -6,7 +6,13 @@ export function ReviewsEmpty() {
         <EmptyState
             icon={Star}
             title="No reviews yet"
-            subtitle="Be the first to review this product"
+            subtitle="Be the first to share your experience — your review helps other shoppers make great choices."
+            ctaLabel="Browse Products"
+            ctaHref="/products"
+            secondaryCtaLabel="Go Home"
+            secondaryCtaHref="/"
+            iconBg="bg-amber-50"
+            iconColor="text-amber-400"
         />
     )
 }

@@ -1,17 +1,19 @@
 'use client'
 
-import type { KeyboardEvent } from 'react'
+import { useState, type KeyboardEvent } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { motion, useReducedMotion } from 'framer-motion'
+import { m, useReducedMotion } from 'framer-motion'
 import { Minus, Package2, Plus, Trash2 } from 'lucide-react'
 import { formatINR } from '@/lib/utils'
+import { getImageUrl } from '@/lib/media'
 import type { CartItem as CartItemType } from '@/types/cart.types'
 import {
     cartItemDiscountPercent,
     cartItemIsLowStock,
     cartItemOriginalPrice,
     cartItemStockLabel,
+    cartItemUnitPriceLabel,
     cartItemUnitSavings,
 } from './cart.utils'
 
@@ -23,6 +25,7 @@ interface CartItemProps {
 
 export function CartItem({ item, onQtyChange, onRemove }: CartItemProps) {
     const reduceMotion = useReducedMotion()
+    const [substitutionPreference, setSubstitutionPreference] = useState<'best_match' | 'refund'>('best_match')
     const maxQty = item.stockQuantity ?? 99
     const href = `/products/${item.slug ?? item.productId}`
     const originalPrice = cartItemOriginalPrice(item)
@@ -31,6 +34,7 @@ export function CartItem({ item, onQtyChange, onRemove }: CartItemProps) {
     const isLowStock = cartItemIsLowStock(item)
     const stockLabel = cartItemStockLabel(item)
     const originalSubtotal = originalPrice * item.quantity
+    const unitPriceLabel = cartItemUnitPriceLabel(item)
 
     const handleStepperKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
         if (event.key === 'ArrowRight' || event.key === 'ArrowUp') {
@@ -45,25 +49,27 @@ export function CartItem({ item, onQtyChange, onRemove }: CartItemProps) {
     }
 
     return (
-        <motion.article
+        <m.article
             layout={!reduceMotion}
             initial={reduceMotion ? false : { opacity: 0, y: 18 }}
             animate={reduceMotion ? undefined : { opacity: 1, y: 0 }}
             exit={reduceMotion ? { opacity: 0 } : { opacity: 0, x: -40, height: 0, marginBottom: 0 }}
             transition={{ duration: 0.26, ease: 'easeOut' }}
-            className="group rounded-[22px] border border-[rgba(255,255,255,0.7)] bg-[linear-gradient(180deg,rgba(255,255,255,0.98)_0%,rgba(250,247,241,0.96)_100%)] p-4 shadow-[0_14px_28px_rgba(15,23,42,0.05)] transition-all duration-200 hover:-translate-y-0.5 hover:border-[rgba(104,72,198,0.16)] hover:shadow-[0_18px_38px_rgba(15,23,42,0.08)]"
+            className="group rounded-[22px] bg-[color:var(--shop-surface-elevated)] p-[14px] shadow-[var(--shop-shadow-level-1)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[var(--shop-shadow-level-2)]"
         >
-            <div className="grid grid-cols-[96px_minmax(0,1fr)_132px] gap-4">
+            <div className="grid grid-cols-[72px_minmax(0,1fr)_124px] gap-4">
                 <Link
                     href={href}
-                    className="relative h-24 w-24 overflow-hidden rounded-xl border border-[rgba(255,255,255,0.7)] bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.96),rgba(242,237,228,0.95))]"
+                    className="relative h-[72px] w-[72px] overflow-hidden rounded-[12px] border border-[color:var(--shop-border)]"
+                    style={{ backgroundImage: 'var(--shop-gradient-promo)' }}
                 >
                     <Image
-                        src={item.image || '/placeholder-product.svg'}
+                        src={getImageUrl(item.image)}
                         alt={item.name}
                         fill
-                        className="object-contain p-3"
-                        sizes="96px"
+                        className="object-contain p-2.5"
+                        sizes="72px"
+                    unoptimized={true}
                     />
                 </Link>
 
@@ -72,13 +78,13 @@ export function CartItem({ item, onQtyChange, onRemove }: CartItemProps) {
                         <div className="min-w-0">
                             <Link
                                 href={href}
-                                className="block text-[16px] font-semibold leading-[1.32] text-[#16202A] transition-colors hover:text-[color:var(--shop-primary)]"
+                                className="block text-[15px] font-bold leading-[1.32] text-[color:var(--shop-ink)] transition-colors hover:text-[color:var(--shop-primary)]"
                             >
                                 <span className="line-clamp-2">{item.name}</span>
                             </Link>
 
                             <div className="mt-2 flex flex-wrap items-center gap-2">
-                                <span className="inline-flex items-center gap-1 rounded-full bg-[rgba(104,72,198,0.08)] px-2.5 py-1 text-[11px] font-semibold text-[color:var(--shop-primary)]">
+                                <span className="inline-flex items-center gap-1 rounded-full bg-[color:var(--shop-primary-soft)] px-2.5 py-1 text-[11px] font-semibold text-[color:var(--shop-primary)]">
                                     <Package2 className="h-3 w-3" />
                                     {item.unit || 'Unit'}
                                 </span>
@@ -104,20 +110,59 @@ export function CartItem({ item, onQtyChange, onRemove }: CartItemProps) {
                                 </span>
                             </div>
 
+                            {unitPriceLabel ? (
+                                <p className="mt-1.5 text-[11px] font-medium text-[color:var(--shop-ink-faint)]">
+                                    {unitPriceLabel}
+                                </p>
+                            ) : null}
+
                             <div className="mt-2 flex flex-wrap items-center gap-2">
-                                <p className="text-sm font-semibold text-[#166534]">{formatINR(item.price)} each</p>
+                                <p className="text-[16px] font-bold tabular-nums text-[color:var(--shop-ink)]">{formatINR(item.price)}</p>
                                 {isDiscounted && (
-                                    <span className="inline-flex rounded-full bg-[rgba(220,38,38,0.08)] px-2.5 py-1 text-[11px] font-semibold text-[color:var(--shop-discount)]">
+                                    <span className="inline-flex rounded-full bg-[rgba(194,65,12,0.10)] px-2.5 py-1 text-[11px] font-bold tracking-[0.04em] text-[color:var(--shop-discount)]">
                                         {discount > 0 ? `${discount}% OFF` : `Save ${formatINR(cartItemUnitSavings(item))}`}
                                     </span>
                                 )}
+                            </div>
+
+                            <div className="mt-3 rounded-[14px] border border-[color:var(--shop-border)] bg-[color:var(--shop-surface-subtle)] p-3">
+                                <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[color:var(--shop-ink-faint)]">
+                                    Substitution
+                                </p>
+                                <div className="mt-2 flex flex-wrap gap-2">
+                                    <button
+                                        type="button"
+                                        onClick={() => setSubstitutionPreference('best_match')}
+                                        className={`inline-flex h-8 items-center rounded-full px-3 text-[11px] font-semibold transition-colors ${
+                                            substitutionPreference === 'best_match'
+                                                ? 'bg-[color:var(--shop-primary)] text-white'
+                                                : 'border border-[color:var(--shop-border)] bg-[color:var(--shop-surface)] text-[color:var(--shop-ink-muted)] hover:border-[color:var(--shop-primary)] hover:text-[color:var(--shop-primary)]'
+                                        }`}
+                                    >
+                                        Best match
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => setSubstitutionPreference('refund')}
+                                        className={`inline-flex h-8 items-center rounded-full px-3 text-[11px] font-semibold transition-colors ${
+                                            substitutionPreference === 'refund'
+                                                ? 'bg-[color:var(--shop-primary)] text-white'
+                                                : 'border border-[color:var(--shop-border)] bg-[color:var(--shop-surface)] text-[color:var(--shop-ink-muted)] hover:border-[color:var(--shop-primary)] hover:text-[color:var(--shop-primary)]'
+                                        }`}
+                                    >
+                                        Refund if unavailable
+                                    </button>
+                                </div>
+                                <p className="mt-2 text-[11px] leading-5 text-[color:var(--shop-ink-muted)]">
+                                    Pick whether we replace an unavailable item with a similar option or refund it before checkout.
+                                </p>
                             </div>
                         </div>
 
                         <button
                             type="button"
                             onClick={onRemove}
-                            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[#B1B8BF] opacity-0 transition-all hover:bg-red-50 hover:text-red-500 focus-visible:opacity-100 group-hover:opacity-100"
+                            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[color:var(--shop-ink-faint)] opacity-0 transition-all hover:bg-red-50 hover:text-red-500 focus-visible:opacity-100 group-hover:opacity-100"
                             aria-label={`Remove ${item.name} from cart`}
                         >
                             <Trash2 className="h-4 w-4" strokeWidth={1.7} />
@@ -128,31 +173,31 @@ export function CartItem({ item, onQtyChange, onRemove }: CartItemProps) {
                         <div
                             tabIndex={0}
                             onKeyDown={handleStepperKeyDown}
-                            className="inline-flex items-center rounded-full border border-[rgba(22,101,52,0.16)] bg-white p-1 shadow-[inset_0_1px_0_rgba(255,255,255,0.9)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[rgba(104,72,198,0.22)]"
+                            className="grid h-9 w-[114px] grid-cols-3 overflow-hidden rounded-[10px] border border-[color:var(--shop-border)] bg-[color:var(--shop-surface)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--shop-primary-soft)]"
                             aria-label={`Quantity for ${item.name}`}
                         >
                             <button
                                 type="button"
                                 onClick={() => onQtyChange(Math.max(1, item.quantity - 1))}
                                 disabled={item.quantity <= 1}
-                                className="flex h-9 w-9 items-center justify-center rounded-full text-[#166534] transition-colors hover:bg-[rgba(22,101,52,0.08)] disabled:cursor-not-allowed disabled:opacity-40"
+                                className="flex h-full w-full items-center justify-center text-[color:var(--shop-action)] transition-colors hover:bg-[color:var(--shop-action-soft)] disabled:cursor-not-allowed disabled:opacity-40"
                                 aria-label={`Decrease quantity of ${item.name}`}
                             >
                                 <Minus className="h-4 w-4" />
                             </button>
-                            <motion.span
+                            <m.span
                                 key={item.quantity}
                                 initial={reduceMotion ? false : { y: 8, opacity: 0 }}
                                 animate={reduceMotion ? undefined : { y: 0, opacity: 1 }}
-                                className="inline-flex min-w-[36px] justify-center text-sm font-semibold text-[#16202A]"
+                                className="inline-flex h-full w-full items-center justify-center border-x border-[color:var(--shop-border)] text-sm font-semibold text-[color:var(--shop-ink)]"
                             >
                                 {item.quantity}
-                            </motion.span>
+                            </m.span>
                             <button
                                 type="button"
                                 onClick={() => onQtyChange(Math.min(maxQty, item.quantity + 1))}
                                 disabled={item.quantity >= maxQty}
-                                className="flex h-9 w-9 items-center justify-center rounded-full bg-[#166534] text-white transition-colors hover:bg-[#14532D] disabled:cursor-not-allowed disabled:opacity-40"
+                                className="flex h-full w-full items-center justify-center bg-[color:var(--shop-action)] text-white transition-colors hover:bg-[color:var(--shop-action-hover)] disabled:cursor-not-allowed disabled:opacity-40"
                                 aria-label={`Increase quantity of ${item.name}`}
                             >
                                 <Plus className="h-4 w-4" />
@@ -160,7 +205,7 @@ export function CartItem({ item, onQtyChange, onRemove }: CartItemProps) {
                         </div>
 
                         {isDiscounted && (
-                            <p className="text-xs font-medium text-[#68737E]">
+                            <p className="text-xs font-medium text-[color:var(--shop-ink-muted)]">
                                 You save {formatINR(cartItemUnitSavings(item) * item.quantity)}
                             </p>
                         )}
@@ -170,25 +215,25 @@ export function CartItem({ item, onQtyChange, onRemove }: CartItemProps) {
                 <div className="flex flex-col items-end justify-between text-right">
                     <div className="min-h-9" />
                     <div>
-                        <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#98A0A8]">
+                        <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[color:var(--shop-ink-faint)]">
                             Subtotal
                         </p>
                         {isDiscounted && (
-                            <p className="mt-1 text-xs font-medium text-[#A1A8AF] line-through">
+                            <p className="mt-1 text-xs font-medium text-[color:var(--shop-ink-faint)] line-through">
                                 {formatINR(originalSubtotal)}
                             </p>
                         )}
-                        <motion.p
+                        <m.p
                             key={`${item.productId}-${item.quantity}`}
                             initial={reduceMotion ? false : { y: 10, opacity: 0 }}
                             animate={reduceMotion ? undefined : { y: 0, opacity: 1 }}
-                            className="mt-1 text-[22px] font-bold tracking-[-0.04em] text-[#16202A]"
+                            className="mt-1 text-[22px] font-extrabold tabular-nums tracking-[-0.03em] text-[color:var(--shop-ink)]"
                         >
                             {formatINR(item.subtotal)}
-                        </motion.p>
+                        </m.p>
                     </div>
                 </div>
             </div>
-        </motion.article>
+        </m.article>
     )
 }

@@ -3,7 +3,7 @@
 import type { MouseEvent } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
 import { Heart } from 'lucide-react'
-import { motion } from 'framer-motion'
+import { m } from 'framer-motion'
 import { cn } from '@/lib/utils'
 import { useWishlist } from '@/hooks/useWishlist'
 import { useAuthStore } from '@/store/auth.store'
@@ -35,7 +35,7 @@ export function WishlistButton({ productId, className }: WishlistButtonProps) {
     }
 
     return (
-        <motion.button
+        <m.button
             type="button"
             onClick={handleClick}
             whileTap={{ scale: 0.9 }}
@@ -51,6 +51,6 @@ export function WishlistButton({ productId, className }: WishlistButtonProps) {
                 strokeWidth={1.5}
                 fill={active ? 'currentColor' : 'none'}
             />
-        </motion.button>
+        </m.button>
     )
 }

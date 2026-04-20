@@ -9,11 +9,20 @@ dayjs.extend(relativeTime)
 dayjs.extend(timezone)
 dayjs.extend(utc)
 
+const HTML_ENTITY_MAP = {
+  '&amp;': '&',
+  '&lt;': '<',
+  '&gt;': '>',
+  '&quot;': '"',
+  '&#39;': "'",
+  '&nbsp;': ' ',
+} as const
+
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
-/** ₹1,24,500 Indian format */
+/** ?1,24,500 Indian format */
 export function formatINR(amount: number | string) {
   return new Intl.NumberFormat('en-IN', {
     style: 'currency',
@@ -21,6 +30,13 @@ export function formatINR(amount: number | string) {
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
   }).format(Number(amount) || 0)
+}
+
+export function decodeHtmlEntities(text: string) {
+  return text.replace(
+    /&(amp|lt|gt|quot|#39|nbsp);/g,
+    (match) => HTML_ENTITY_MAP[match as keyof typeof HTML_ENTITY_MAP] ?? match,
+  )
 }
 
 /** 22 May 2026, 3:45 PM */

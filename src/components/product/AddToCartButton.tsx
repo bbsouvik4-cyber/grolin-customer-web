@@ -39,16 +39,17 @@ export function AddToCartButton({ productId, stockQty, maxQty, className }: AddT
                 onClick={handleAdd}
                 disabled={stockQty <= 0 || isAdding}
                 className={cn(
-                    'flex items-center justify-center gap-1 rounded-lg bg-green-500 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-green-600 disabled:opacity-50',
+                    'flex items-center justify-center gap-2 rounded-[10px] px-4 py-2.5 text-[13px] font-bold text-white shadow-green-glow btn-press transition-all duration-150 hover:shadow-green-glow-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--shop-action)] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50',
                     className,
                 )}
+                style={{ backgroundImage: 'linear-gradient(135deg, #16945E 0%, #128050 100%)' }}
                 type="button"
             >
                 {isAdding ? (
                     <Loader2 className="h-4 w-4 animate-spin" />
                 ) : (
                     <>
-                        <Plus className="h-4 w-4" /> Add
+                        <Plus className="h-4 w-4" strokeWidth={2.4} /> Add to Cart
                     </>
                 )}
             </button>
@@ -56,22 +57,24 @@ export function AddToCartButton({ productId, stockQty, maxQty, className }: AddT
     }
 
     return (
-        <div className={cn('inline-flex items-center gap-0.5 rounded-lg border border-green-200 bg-green-50', className)}>
+        <div className={cn('grid grid-cols-3 overflow-hidden rounded-[10px] bg-[color:var(--shop-action)] text-white shadow-[var(--shop-shadow-level-1)]', className)}>
             <button
                 onClick={() => (qty <= 1 ? removeFromCart(productId) : updateQty(productId, qty - 1))}
-                className="rounded-l-lg text-green-600 hover:bg-green-100 flex h-8 w-8 items-center justify-center"
+                className="flex h-10 items-center justify-center border-r border-white/15 transition-colors hover:bg-[color:var(--shop-action-hover)] focus-visible:outline-none"
                 type="button"
+                aria-label="Decrease quantity"
             >
-                <Minus className="h-3.5 w-3.5" />
+                <Minus className="h-3.5 w-3.5" strokeWidth={2.4} />
             </button>
-            <span className="w-7 text-center text-sm font-bold text-green-700">{qty}</span>
+            <span className="flex h-10 items-center justify-center text-[15px] font-bold tabular-nums" aria-label={`Quantity: ${qty}`}>{qty}</span>
             <button
                 onClick={() => updateQty(productId, qty + 1)}
                 disabled={qty >= limit}
-                className="rounded-r-lg text-green-600 hover:bg-green-100 disabled:opacity-40 flex h-8 w-8 items-center justify-center"
+                className="flex h-10 items-center justify-center border-l border-white/15 transition-colors hover:bg-[color:var(--shop-action-hover)] disabled:opacity-40 focus-visible:outline-none"
                 type="button"
+                aria-label="Increase quantity"
             >
-                <Plus className="h-3.5 w-3.5" />
+                <Plus className="h-3.5 w-3.5" strokeWidth={2.4} />
             </button>
         </div>
     )

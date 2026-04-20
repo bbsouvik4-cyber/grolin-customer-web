@@ -3,10 +3,11 @@
 import { Suspense, useEffect, useMemo } from 'react'
 import { useInView } from 'react-intersection-observer'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
-import { AlertCircle } from 'lucide-react'
+import { AlertCircle, PackageSearch } from 'lucide-react'
 import { ProductCard } from '@/components/product/ProductCard'
 import { FilterBar } from '@/components/product/FilterBar'
 import { ProductGrid, ProductGridSkeleton } from '@/components/product/ProductGrid'
+import { EmptyStateCard } from '@/components/shared/EmptyStateCard'
 import { useInfiniteProducts } from '@/hooks/useInfiniteProducts'
 import type { Product } from '@/types/product.types'
 
@@ -22,12 +23,12 @@ export default function ProductsPage() {
     return (
         <Suspense
             fallback={
-                <div className="px-6 py-6 page-enter">
+                <div className="page-enter px-4 py-6 sm:px-6">
                     <div className="mb-5 space-y-2">
-                        <div className="h-8 w-48 rounded bg-gray-200/70" />
-                        <div className="h-4 w-28 rounded bg-gray-200/70" />
+                        <div className="h-8 w-48 rounded bg-black/10" />
+                        <div className="h-4 w-28 rounded bg-black/10" />
                     </div>
-                    <div className="mb-5 h-[74px] rounded-[20px] bg-gray-200/70" />
+                    <div className="mb-5 h-[74px] rounded-[20px] bg-black/10" />
                     <ProductGridSkeleton count={10} />
                 </div>
             }
@@ -54,7 +55,6 @@ function ProductsPageContent() {
         data,
         isLoading,
         isError,
-        error,
         refetch,
         fetchNextPage,
         hasNextPage,
@@ -136,10 +136,10 @@ function ProductsPageContent() {
     }
 
     return (
-        <div className="px-6 py-6 page-enter">
+        <div className="page-enter px-4 py-6 sm:px-6">
             <div className="mb-4">
-                <h1 className="text-2xl font-bold text-[#1A1A1A]">All Products</h1>
-                <p className="mt-1 text-sm text-[#8A9199]">{totalCount} products</p>
+                <h1 className="text-[28px] font-extrabold leading-[1.06] tracking-[-0.025em] text-[color:var(--shop-ink)] sm:text-[32px]">All Products</h1>
+                <p className="mt-1 text-sm text-[color:var(--shop-ink-muted)]">{totalCount} products</p>
             </div>
 
             <FilterBar
@@ -153,25 +153,26 @@ function ProductsPageContent() {
             {isLoading ? (
                 <ProductGridSkeleton count={10} />
             ) : isError ? (
-                <div className="rounded-[24px] border border-red-200 bg-white p-6 text-center">
-                    <AlertCircle className="mx-auto mb-3 h-8 w-8 text-red-500" />
-                    <p className="text-sm font-medium text-[#374151]">
-                        {error instanceof Error ? error.message : 'Could not load products.'}
-                    </p>
-                    <button
-                        type="button"
-                        onClick={() => refetch()}
-                        className="mt-4 rounded-full bg-[#111827] px-5 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#1F2937]"
-                    >
-                        Retry
-                    </button>
+                <div className="overflow-hidden rounded-[30px] border border-[color:var(--shop-border)] bg-[linear-gradient(180deg,rgba(255,255,255,0.96)_0%,rgba(240,236,232,0.94)_100%)] shadow-[var(--shop-shadow-level-2)]">
+                    <EmptyStateCard
+                        icon={AlertCircle}
+                        title="We couldn't load products right now"
+                        subtitle="Please retry in a moment or explore another aisle while the live catalog reconnects."
+                        ctaLabel="Retry"
+                        ctaAction={() => refetch()}
+                        secondaryCtaLabel="Browse Categories"
+                        secondaryCtaHref="/categories"
+                    />
                 </div>
             ) : sortedProducts.length === 0 ? (
-                <div className="rounded-[24px] border border-black/5 bg-white py-16 text-center">
-                    <p className="text-base font-semibold text-[#1F2937]">No products found</p>
-                    <p className="mt-1 text-sm text-[#8A9199]">
-                        Try changing sort/filter options and check again.
-                    </p>
+                <div className="overflow-hidden rounded-[30px] border border-[color:var(--shop-border)] bg-[linear-gradient(180deg,rgba(255,255,255,0.96)_0%,rgba(248,243,238,0.94)_100%)] shadow-[var(--shop-shadow-level-1)]">
+                    <EmptyStateCard
+                        icon={PackageSearch}
+                        title="We're stocking the shelves!"
+                        subtitle="Check back soon or try another category while fresh picks arrive."
+                        ctaLabel="Browse Categories"
+                        ctaHref="/categories"
+                    />
                 </div>
             ) : (
                 <>

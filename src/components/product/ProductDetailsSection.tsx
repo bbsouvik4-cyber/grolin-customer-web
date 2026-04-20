@@ -39,23 +39,23 @@ export function ProductDetailsSection({ product }: ProductDetailsSectionProps) {
     return (
         <section className="space-y-3">
             {details.length > 0 && (
-                <div className="overflow-hidden rounded-[24px] border border-gray-100 bg-white">
+                <div className="overflow-hidden rounded-[24px] border border-[color:var(--shop-border)] bg-[color:var(--shop-surface)]">
                     <button
                         type="button"
                         onClick={() => setOpenSections((prev) => ({ ...prev, product: !prev.product }))}
                         className="flex w-full items-center justify-between px-5 py-4 text-left"
                     >
                         <div>
-                            <p className="text-sm font-semibold text-gray-900">About this product</p>
-                            <p className="mt-1 text-xs text-gray-500">Ingredients, shelf life, storage, and care</p>
+                            <p className="text-sm font-semibold text-[color:var(--shop-ink)]">About this product</p>
+                            <p className="mt-1 text-xs text-[color:var(--shop-ink-muted)]">Ingredients, shelf life, storage, and care</p>
                         </div>
                         <ChevronDown
-                            className={`h-4 w-4 text-gray-400 transition-transform ${openSections.product ? 'rotate-180' : ''}`}
+                            className={`h-4 w-4 text-[color:var(--shop-ink-faint)] transition-transform ${openSections.product ? 'rotate-180' : ''}`}
                             strokeWidth={1.7}
                         />
                     </button>
                     {openSections.product && (
-                        <div className="grid gap-3 border-t border-gray-100 p-4 sm:grid-cols-2">
+                        <div className="grid gap-3 border-t border-[color:var(--shop-border)] p-4 sm:grid-cols-2">
                             {details.map((item) => {
                                 const Icon = item.icon
                                 return (
@@ -67,10 +67,10 @@ export function ProductDetailsSection({ product }: ProductDetailsSectionProps) {
                                             <Icon className="h-4 w-4" strokeWidth={1.5} />
                                         </div>
                                         <div className="min-w-0">
-                                            <p className="text-xs font-semibold uppercase tracking-wider text-gray-400">
+                                            <p className="eyebrow">
                                                 {item.label}
                                             </p>
-                                            <p className="mt-0.5 text-sm leading-relaxed text-gray-700">
+                                            <p className="mt-0.5 text-sm leading-relaxed text-[color:var(--shop-ink-muted)]">
                                                 {item.value}
                                             </p>
                                         </div>
@@ -83,7 +83,7 @@ export function ProductDetailsSection({ product }: ProductDetailsSectionProps) {
             )}
 
             {certifications.length > 0 && (
-                <div className="overflow-hidden rounded-[24px] border border-gray-100 bg-white">
+                <div className="overflow-hidden rounded-[24px] border border-[color:var(--shop-border)] bg-[color:var(--shop-surface)]">
                     <button
                         type="button"
                         onClick={() =>
@@ -92,16 +92,16 @@ export function ProductDetailsSection({ product }: ProductDetailsSectionProps) {
                         className="flex w-full items-center justify-between px-5 py-4 text-left"
                     >
                         <div>
-                            <p className="text-sm font-semibold text-gray-900">Certifications</p>
-                            <p className="mt-1 text-xs text-gray-500">Quality and sourcing marks for this item</p>
+                            <p className="text-sm font-semibold text-[color:var(--shop-ink)]">Certifications</p>
+                            <p className="mt-1 text-xs text-[color:var(--shop-ink-muted)]">Quality and sourcing marks for this item</p>
                         </div>
                         <ChevronDown
-                            className={`h-4 w-4 text-gray-400 transition-transform ${openSections.certifications ? 'rotate-180' : ''}`}
+                            className={`h-4 w-4 text-[color:var(--shop-ink-faint)] transition-transform ${openSections.certifications ? 'rotate-180' : ''}`}
                             strokeWidth={1.7}
                         />
                     </button>
                     {openSections.certifications && (
-                        <div className="border-t border-gray-100 px-4 py-4">
+                        <div className="border-t border-[color:var(--shop-border)] px-4 py-4">
                             <div className="flex flex-wrap gap-2">
                                 {certifications.map((cert) => (
                                     <span
@@ -119,32 +119,32 @@ export function ProductDetailsSection({ product }: ProductDetailsSectionProps) {
             )}
 
             {nutrition && Object.keys(nutrition).length > 0 && (
-                <div className="overflow-hidden rounded-[24px] border border-gray-100 bg-white">
+                <div className="overflow-hidden rounded-[24px] border border-[color:var(--shop-border)] bg-[color:var(--shop-surface)]">
                     <button
                         type="button"
                         onClick={() => setOpenSections((prev) => ({ ...prev, nutrition: !prev.nutrition }))}
                         className="flex w-full items-center justify-between px-5 py-4 text-left"
                     >
                         <div>
-                            <p className="text-sm font-semibold text-gray-900">Nutrition facts</p>
-                            <p className="mt-1 text-xs text-gray-500">Expanded values for quick label-style scanning</p>
+                            <p className="text-sm font-semibold text-[color:var(--shop-ink)]">Nutrition facts</p>
+                            <p className="mt-1 text-xs text-[color:var(--shop-ink-muted)]">Expanded values for quick label-style scanning</p>
                         </div>
                         <ChevronDown
-                            className={`h-4 w-4 text-gray-400 transition-transform ${openSections.nutrition ? 'rotate-180' : ''}`}
+                            className={`h-4 w-4 text-[color:var(--shop-ink-faint)] transition-transform ${openSections.nutrition ? 'rotate-180' : ''}`}
                             strokeWidth={1.7}
                         />
                     </button>
                     {openSections.nutrition && (
-                        <div className="grid grid-cols-2 gap-2 border-t border-gray-100 p-4 sm:grid-cols-3 md:grid-cols-4">
+                        <div className="grid grid-cols-2 gap-2 border-t border-[color:var(--shop-border)] p-4 sm:grid-cols-3 md:grid-cols-4">
                             {Object.entries(nutrition).map(([key, value]) => (
                                 <div
                                     key={key}
                                     className="rounded-xl border border-gray-100 bg-[var(--shop-surface)] px-3 py-3 text-center"
                                 >
-                                    <p className="text-[11px] font-medium uppercase tracking-wide text-gray-400">
+                                    <p className="text-[11px] font-medium uppercase tracking-wide text-[color:var(--shop-ink-muted)]">
                                         {key.replace(/_/g, ' ')}
                                     </p>
-                                    <p className="mt-1 text-base font-bold text-gray-900">{value}</p>
+                                    <p className="mt-1 text-base font-bold text-[color:var(--shop-ink)]">{value}</p>
                                 </div>
                             ))}
                         </div>

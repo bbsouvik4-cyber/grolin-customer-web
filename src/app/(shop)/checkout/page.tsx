@@ -1,9 +1,9 @@
-'use client'
+﻿'use client'
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useQuery } from '@tanstack/react-query'
-import { ArrowLeft, ChevronLeft, ShieldCheck } from 'lucide-react'
+import { ChevronLeft, ShieldCheck } from 'lucide-react'
 import {
     AddressStep,
     OrderSummaryPanel,
@@ -12,18 +12,19 @@ import {
     StepIndicator,
     StickySummaryBar,
 } from '@/components/checkout'
-import { FREE_DELIVERY_THRESHOLD, DEFAULT_DELIVERY_FEE, PLATFORM_FEE } from '@/lib/constants'
+import { DEFAULT_DELIVERY_FEE, FREE_DELIVERY_THRESHOLD, PLATFORM_FEE } from '@/lib/constants'
 import { QUERY_KEYS } from '@/lib/queryKeys'
-import { useCart } from '@/hooks/useCart'
-import { useCoupon } from '@/hooks/useCoupon'
 import { loadRazorpay, openRazorpayCheckout } from '@/lib/razorpay'
 import { formatINR } from '@/lib/utils'
-import { useAuthStore } from '@/store/auth.store'
-import { useCouponStore } from '@/store/coupon.store'
+import { useCart } from '@/hooks/useCart'
+import { useCoupon } from '@/hooks/useCoupon'
 import { cartService } from '@/services/cart.service'
+import { authService } from '@/services/auth.service'
 import { ordersService } from '@/services/orders.service'
 import { paymentsService } from '@/services/payments.service'
 import { walletService } from '@/services/wallet.service'
+import { useAuthStore } from '@/store/auth.store'
+import { useCouponStore } from '@/store/coupon.store'
 import { toast } from 'sonner'
 import type { Address } from '@/types/address.types'
 import type { PaymentMethod } from '@/types/order.types'
@@ -62,10 +63,11 @@ export default function CheckoutPage() {
     const deliveryFee = subtotal >= FREE_DELIVERY_THRESHOLD ? 0 : DEFAULT_DELIVERY_FEE
     const total = Math.max(0, subtotal + deliveryFee + PLATFORM_FEE - couponDiscount)
     const stepIndex = STEPS.indexOf(step)
-    const itemCount = cart?.items.length ?? 0
+    const itemCount = cart?.items.reduce((sum, item) => sum + item.quantity, 0) ?? 0
+    const securityNote = step === 'review' ? '\u{1F512} Secured by Razorpay \u00B7 100% payment protection' : undefined
 
     useEffect(() => {
-        document.title = 'Checkout — Grolin Grocery'
+        document.title = 'Checkout \u2014 Grolin Grocery'
     }, [])
 
     useEffect(() => {
@@ -97,6 +99,24 @@ export default function CheckoutPage() {
                 deliveryNotes: deliveryNotes.trim() || undefined,
             })
 
+            const getOrderConfirmedUrl = async () => {
+                let isFirst = false
+
+                try {
+                    const stats = await authService.getStats()
+                    isFirst = stats.total_orders === 1
+                } catch {
+                    isFirst = false
+                }
+
+                const params = new URLSearchParams({ orderId: order.id })
+                if (isFirst) {
+                    params.set('isFirst', 'true')
+                }
+
+                return `/order-confirmed?${params.toString()}`
+            }
+
             if (paymentMethod === 'ONLINE') {
                 await loadRazorpay()
                 const razorpayOrder = await paymentsService.createOrder(order.id)
@@ -115,11 +135,11 @@ export default function CheckoutPage() {
                             razorpaySignature: payment.razorpay_signature,
                         })
                         clearCoupon()
-                        router.push(`/checkout/success?orderId=${order.id}`)
+                        router.push(await getOrderConfirmedUrl())
                     },
                     onDismiss: () => {
                         setIsPlacing(false)
-                        toast.error('Payment cancelled. Order saved — retry from Orders page.')
+                        toast.error('Payment cancelled. Order saved \u2014 retry from Orders page.')
                     },
                 })
 
@@ -136,14 +156,14 @@ export default function CheckoutPage() {
             }
 
             clearCoupon()
-            router.push(`/checkout/success?orderId=${order.id}`)
+            router.push(await getOrderConfirmedUrl())
         } catch {
             toast.error('Could not place order')
             setIsPlacing(false)
         }
     }
 
-    const ctaLabel = getCheckoutCtaLabel(step, paymentMethod, total)
+    const ctaLabel = getCheckoutCtaLabel(step, total)
     const isPrimaryDisabled =
         step === 'address'
             ? !selectedAddr
@@ -185,39 +205,39 @@ export default function CheckoutPage() {
     }[step]
 
     return (
-        <div className="min-h-screen bg-slate-50 pb-28 lg:pb-10">
+        <div className="min-h-screen pb-28 lg:pb-10">
             <div className="page-enter mx-auto max-w-[1280px] px-4 py-6 sm:px-5 lg:px-6 lg:py-8">
-                <div className="mb-6 flex items-center gap-4">
-                    <button
-                        onClick={() => router.back()}
-                        className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-600 transition-colors hover:bg-slate-50"
-                        aria-label="Go back"
-                    >
-                        <ArrowLeft className="h-4 w-4" />
-                    </button>
-                    <div>
-                        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">Secure Checkout</p>
-                        <h1 className="mt-1 text-2xl font-semibold tracking-tight text-slate-950 sm:text-[30px]">
-                            Complete your order
-                        </h1>
-                    </div>
-                </div>
+                <div className="mb-6 rounded-[28px] border border-[color:var(--shop-border)] bg-[color:var(--shop-surface)] px-4 py-5 shadow-[var(--shop-shadow-level-2)] sm:px-6 sm:py-6">
+                    <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+                        <div className="flex items-center gap-3">
+                            <div
+                                className="flex h-12 w-12 items-center justify-center rounded-[18px] text-lg font-bold text-white shadow-[var(--shop-shadow-level-2)]"
+                                style={{ backgroundImage: 'var(--shop-gradient-hero)' }}
+                            >
+                                G
+                            </div>
+                            <span className="text-[24px] font-bold tracking-[-0.04em] text-[color:var(--shop-ink)]">
+                                Grolin
+                            </span>
+                        </div>
 
-                <div className="mb-6 rounded-[28px] border border-slate-200 bg-white px-4 py-5 shadow-[0_16px_40px_rgba(15,23,42,0.05)] sm:px-6">
-                    <StepIndicator steps={Object.values(STEP_LABELS)} currentStep={stepIndex} />
+                        <div className="w-full lg:max-w-[560px]">
+                            <StepIndicator steps={Object.values(STEP_LABELS)} currentStep={stepIndex} />
+                        </div>
+                    </div>
                 </div>
 
                 <div className="grid gap-6 lg:grid-cols-12 lg:items-start">
                     <div className="space-y-5 lg:col-span-7">
-                        <section className="rounded-[28px] border border-slate-200 bg-white p-5 shadow-[0_20px_48px_rgba(15,23,42,0.06)] sm:p-6">
+                        <section className="rounded-[28px] border border-[color:var(--shop-border)] bg-[color:var(--shop-surface)] p-5 shadow-[var(--shop-shadow-level-2)] sm:p-6">
                             <div className="mb-6">
-                                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+                                <p className="eyebrow text-[color:var(--shop-primary)]">
                                     {stepContent.eyebrow}
                                 </p>
-                                <h2 className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">
+                                <h2 className="mt-2 text-2xl font-semibold tracking-tight text-[color:var(--shop-ink)]">
                                     {stepContent.title}
                                 </h2>
-                                <p className="mt-2 text-sm leading-6 text-slate-500">
+                                <p className="mt-2 text-sm leading-6 text-[color:var(--shop-ink-muted)]">
                                     {stepContent.description}
                                 </p>
                             </div>
@@ -260,7 +280,7 @@ export default function CheckoutPage() {
                             <button
                                 type="button"
                                 onClick={() => setStep(step === 'payment' ? 'address' : 'payment')}
-                                className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-50"
+                                className="inline-flex items-center gap-2 rounded-full border border-[color:var(--shop-border)] bg-[color:var(--shop-surface)] px-4 py-2.5 text-sm font-medium text-[color:var(--shop-ink-muted)] transition-colors hover:bg-[color:var(--shop-surface-subtle)]"
                             >
                                 <ChevronLeft className="h-4 w-4" />
                                 {step === 'payment' ? 'Back to Address' : 'Back to Payment'}
@@ -283,16 +303,17 @@ export default function CheckoutPage() {
                                 actionLoading={isPlacing}
                                 freeDeliveryThreshold={FREE_DELIVERY_THRESHOLD}
                                 stageLabel={`Step ${stepIndex + 1} of ${STEPS.length}`}
+                                securityNote={securityNote}
                             />
 
-                            <div className="rounded-[24px] border border-green-200 bg-green-50/80 p-4">
+                            <div className="rounded-[24px] border border-[rgba(22,163,74,0.18)] bg-[rgba(240,253,244,0.9)] p-4">
                                 <div className="flex items-center gap-3">
-                                    <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white text-green-600">
+                                    <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white text-[color:var(--shop-success)]">
                                         <ShieldCheck className="h-5 w-5" />
                                     </div>
                                     <div>
-                                        <p className="text-sm font-semibold text-slate-950">Trusted checkout</p>
-                                        <p className="mt-1 text-sm text-slate-500">
+                                        <p className="text-sm font-semibold text-[color:var(--shop-ink)]">Trusted checkout</p>
+                                        <p className="mt-1 text-sm text-[color:var(--shop-ink-muted)]">
                                             Clear pricing, protected payments, and support if plans change.
                                         </p>
                                     </div>
@@ -311,6 +332,7 @@ export default function CheckoutPage() {
                     onCtaClick={handlePrimaryAction}
                     disabled={isPrimaryDisabled}
                     loading={isPlacing}
+                    securityNote={securityNote}
                 >
                     <OrderSummaryPanel
                         subtotal={subtotal}
@@ -332,17 +354,11 @@ export default function CheckoutPage() {
     )
 }
 
-function getCheckoutCtaLabel(step: Step, paymentMethod: PaymentMethod, total: number) {
-    if (step === 'address') return 'Continue to Payment'
-    if (step === 'payment') return 'Continue to Review'
-
-    if (paymentMethod === 'ONLINE') {
-        return `Secure Payment • ${formatINR(total)}`
-    }
-
-    if (paymentMethod === 'WALLET') {
-        return `Pay with Wallet • ${formatINR(total)}`
-    }
-
-    return `Place Order • ${formatINR(total)}`
+function getCheckoutCtaLabel(step: Step, total: number) {
+    if (step !== 'review') return 'Continue \u2192'
+    return `Place Order \u2014 ${formatINR(total)}`
 }
+
+
+
+

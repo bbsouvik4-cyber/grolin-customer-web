@@ -1,60 +1,91 @@
 'use client'
 
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
-import { Home, LayoutGrid, ShoppingBasket, ClipboardList, User } from 'lucide-react'
+import { usePathname, useRouter } from 'next/navigation'
+import { ClipboardList, Home, LayoutGrid, Search, User } from 'lucide-react'
+import { m } from 'framer-motion'
 import { cn } from '@/lib/utils'
-import { useCartStore } from '@/store/cart.store'
 
 const TABS = [
-    { href: '/', icon: Home, label: 'Home' },
-    { href: '/categories', icon: LayoutGrid, label: 'Browse' },
-    { href: '/cart', icon: ShoppingBasket, label: 'Cart', showBadge: true },
-    { href: '/orders', icon: ClipboardList, label: 'Orders' },
-    { href: '/profile', icon: User, label: 'Profile' },
+  { href: '/', icon: Home, label: 'Home' },
+  { href: '/categories', icon: LayoutGrid, label: 'Categories' },
+  { href: '/search', icon: Search, label: 'Search' },
+  { href: '/orders', icon: ClipboardList, label: 'Orders' },
+  { href: '/profile', icon: User, label: 'Account' },
 ]
 
 export function BottomNav() {
-    const pathname = usePathname()
-    const cartCount = useCartStore((s) => s.count)
+  const pathname = usePathname()
+  const router = useRouter()
 
-    return (
-        <nav className="fixed bottom-0 left-0 right-0 z-[300] flex h-16 items-center border-t border-[color:var(--shop-border)] bg-[color:var(--shop-surface-elevated)] shadow-[0_-4px_16px_rgba(0,0,0,0.06)] pb-[env(safe-area-inset-bottom)] md:hidden">
-            {TABS.map((tab) => {
-                const isActive =
-                    tab.href === '/' ? pathname === '/' : pathname.startsWith(tab.href)
-                return (
-                    <Link
-                        key={tab.href}
-                        href={tab.href}
-                        className={cn(
-                            'flex-1 flex flex-col items-center justify-center gap-0.5 py-1 relative min-h-[44px]',
-                            isActive ? 'text-[color:var(--shop-primary)]' : 'text-[color:var(--shop-ink-muted)]/70',
-                        )}
-                    >
-                        <div className="relative">
-                            <tab.icon className="w-6 h-6" />
-                            {tab.showBadge && cartCount > 0 && (
-                                <span className="absolute -top-1.5 -right-2.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-[color:var(--shop-primary)] px-1 text-[9px] font-bold text-white">
-                                    {cartCount > 99 ? '99+' : cartCount}
-                                </span>
-                            )}
-                        </div>
-                        <span
-                            className={cn(
-                                'text-[10px]',
-                                isActive ? 'font-semibold' : 'font-medium',
-                            )}
-                        >
-                            {tab.label}
-                        </span>
-                        {/* Active dot — Blinkit style */}
-                        {isActive && (
-                            <div className="absolute bottom-1 h-1 w-1 rounded-full bg-[color:var(--shop-primary)]" />
-                        )}
-                    </Link>
-                )
-            })}
-        </nav>
-    )
+  const prefetchRoute = (href: string) => {
+    if (href === '/orders' || href === '/profile') {
+      router.prefetch(href)
+    }
+  }
+
+  return (
+    <nav aria-label="Main navigation" className="fixed bottom-0 left-0 right-0 z-[300] border-t border-[color:var(--shop-border)] bg-[rgba(240,236,232,0.94)] pb-[env(safe-area-inset-bottom)] shadow-nav-up backdrop-blur-xl md:hidden">
+      <div className="flex min-h-[64px] items-center px-1.5">
+        {TABS.map((tab) => {
+          const isActive = tab.href === '/' ? pathname === '/' : pathname.startsWith(tab.href)
+          const Icon = tab.icon
+
+          return (
+            <Link
+              key={tab.href}
+              href={tab.href}
+              aria-label={tab.label}
+              aria-current={isActive ? 'page' : undefined}
+              className="relative flex flex-1 flex-col items-center justify-center gap-1 py-2"
+              onMouseEnter={() => prefetchRoute(tab.href)}
+              onTouchStart={() => prefetchRoute(tab.href)}
+            >
+              {/* Spring-animated pill — shared layout between tabs */}
+              {isActive && (
+                <m.span
+                  layoutId="bottom-nav-pill"
+                  className="absolute left-1/2 top-[8px] h-[32px] w-[52px] -translate-x-1/2 rounded-full bg-[color:var(--shop-primary-soft)]"
+                  aria-hidden="true"
+                  initial={{ scale: 0.7, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  transition={{ type: 'spring', stiffness: 500, damping: 32, mass: 0.8 }}
+                />
+              )}
+              {/* Top accent line */}
+              {isActive && (
+                <m.span
+                  layoutId="bottom-nav-accent"
+                  aria-hidden="true"
+                  className="absolute left-1/2 top-0 h-[3px] w-10 -translate-x-1/2 rounded-b-full bg-[linear-gradient(90deg,#6E49D8,#9B6DFF)]"
+                  initial={{ scaleX: 0, opacity: 0 }}
+                  animate={{ scaleX: 1, opacity: 1 }}
+                  transition={{ type: 'spring', stiffness: 600, damping: 30 }}
+                />
+              )}
+              <span
+                className={cn(
+                  'relative z-10 flex h-8 w-[52px] items-center justify-center transition-colors duration-200',
+                  isActive ? 'text-[color:var(--shop-primary)]' : 'text-[color:var(--shop-ink-faint)]',
+                )}
+              >
+                <Icon
+                  className={cn('transition-all duration-200', isActive ? 'h-[22px] w-[22px]' : 'h-[20px] w-[20px]')}
+                  strokeWidth={isActive ? 2.2 : 1.9}
+                />
+              </span>
+              <span
+                className={cn(
+                  'relative z-10 text-[11px] leading-none tracking-[-0.01em] transition-all duration-200',
+                  isActive ? 'font-bold text-[color:var(--shop-primary)]' : 'font-semibold text-[color:var(--shop-ink-faint)]',
+                )}
+              >
+                {tab.label}
+              </span>
+            </Link>
+          )
+        })}
+      </div>
+    </nav>
+  )
 }

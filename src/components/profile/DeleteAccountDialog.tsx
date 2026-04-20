@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { AnimatePresence, motion } from 'framer-motion'
+import { AnimatePresence, m } from 'framer-motion'
 import { AlertTriangle, Loader2, X } from 'lucide-react'
 import { toast } from 'sonner'
 import { authService } from '@/services/auth.service'
@@ -54,14 +54,14 @@ export function DeleteAccountDialog({ isOpen, onClose }: DeleteAccountDialogProp
     return (
         <AnimatePresence>
             {isOpen && (
-                <motion.div
+                <m.div
                     className="fixed inset-0 z-[320] bg-black/30 backdrop-blur-sm"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
                     onClick={deleteMutation.isPending ? undefined : onClose}
                 >
-                    <motion.div
+                    <m.div
                         className="mx-auto mt-[10vh] w-[calc(100%-2rem)] max-w-md rounded-2xl bg-white p-6 shadow-xl"
                         initial={{ opacity: 0, y: 20, scale: 0.96 }}
                         animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -124,8 +124,8 @@ export function DeleteAccountDialog({ isOpen, onClose }: DeleteAccountDialogProp
                                 )}
                             </button>
                         </div>
-                    </motion.div>
-                </motion.div>
+                    </m.div>
+                </m.div>
             )}
         </AnimatePresence>
     )

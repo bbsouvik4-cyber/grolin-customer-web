@@ -2,7 +2,7 @@
 
 import type { MouseEvent } from 'react'
 import { Share2 } from 'lucide-react'
-import { motion } from 'framer-motion'
+import { m } from 'framer-motion'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 
@@ -39,7 +39,7 @@ export function ShareButton({ title, text, url, className }: ShareButtonProps) {
     }
 
     return (
-        <motion.button
+        <m.button
             type="button"
             onClick={handleShare}
             whileTap={{ scale: 0.9 }}
@@ -50,6 +50,6 @@ export function ShareButton({ title, text, url, className }: ShareButtonProps) {
             aria-label="Share this product"
         >
             <Share2 className="h-5 w-5" strokeWidth={1.5} />
-        </motion.button>
+        </m.button>
     )
 }

@@ -3,7 +3,7 @@
 import { useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { AnimatePresence, motion } from 'framer-motion'
+import { AnimatePresence, m } from 'framer-motion'
 import { ArrowLeft, MapPin, Pencil, Star, Trash2, X } from 'lucide-react'
 import { toast } from 'sonner'
 import { addressesService } from '@/services/addresses.service'
@@ -214,14 +214,14 @@ export default function ProfileAddressesPage() {
 
             <AnimatePresence>
                 {isSheetOpen && (
-                    <motion.div
+                    <m.div
                         className="fixed inset-0 z-[260] bg-black/30 backdrop-blur-sm"
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         onClick={closeSheet}
                     >
-                        <motion.div
+                        <m.div
                             className="absolute bottom-0 left-0 right-0 max-h-[86vh] overflow-y-auto rounded-t-[24px] bg-white p-5"
                             initial={{ y: '100%' }}
                             animate={{ y: 0 }}
@@ -249,8 +249,8 @@ export default function ProfileAddressesPage() {
                                 isSubmitting={createMutation.isPending || updateMutation.isPending}
                                 submitLabel={sheetMode === 'edit' ? 'Update Address' : 'Save Address'}
                             />
-                        </motion.div>
-                    </motion.div>
+                        </m.div>
+                    </m.div>
                 )}
             </AnimatePresence>
         </div>

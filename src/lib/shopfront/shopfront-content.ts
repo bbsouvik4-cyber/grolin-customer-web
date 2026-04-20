@@ -2,7 +2,13 @@ export type CategoryIconKey =
   | 'vegetables'
   | 'fruits'
   | 'dairy'
+  | 'bakery'
+  | 'breakfast'
+  | 'beverages'
   | 'snacks'
+  | 'meat'
+  | 'frozen'
+  | 'household'
   | 'baby'
   | 'care'
   | 'pantry'
@@ -35,18 +41,17 @@ export interface ShopfrontAppDownload {
 
 export const SHOPFRONT_VALUE_BAR = {
   message: 'FREE delivery & 40% discount for your next 3 orders. Place your 1st order today.',
-  locale: 'INR • English',
+  locale: 'INR \u00B7 English',
   helpLabel: 'Help Center',
   helpHref: '/profile',
 }
 
 export const SHOPFRONT_HEADER_LINKS = [
   { label: 'Home', href: '/' },
-  { label: 'Pages', href: '/categories' },
-  { label: 'Shop', href: '/products' },
-  { label: 'Vendor', href: '/profile' },
-  { label: 'Blog', href: '/search?q=organic' },
-  { label: 'Contact', href: '/profile' },
+  { label: 'Browse Categories', href: '/categories' },
+  { label: 'Deals & Offers', href: '/products' },
+  { label: 'Our Promise', href: '/profile' },
+  { label: 'Help Center', href: '/profile' },
 ]
 
 export const SHOPFRONT_HEADER_HOTLINE = {
@@ -59,7 +64,14 @@ export const SHOPFRONT_CATEGORY_PREFERENCES: ShopfrontCategoryPreference[] = [
   { label: 'Vegetables', keywords: ['vegetable', 'veggie', 'greens'], icon: 'vegetables' },
   { label: 'Fruits', keywords: ['fruit', 'fruits'], icon: 'fruits' },
   { label: 'Dairy', keywords: ['dairy', 'milk', 'egg', 'eggs'], icon: 'dairy' },
+  { label: 'Bakery', keywords: ['bakery', 'bread', 'croissant'], icon: 'bakery' },
+  { label: 'Breakfast', keywords: ['breakfast', 'cereal', 'oats'], icon: 'breakfast' },
+  { label: 'Drinks', keywords: ['beverage', 'drinks', 'coffee', 'tea', 'juice'], icon: 'beverages' },
   { label: 'Snacks', keywords: ['snack', 'chips', 'biscuits'], icon: 'snacks' },
+  { label: 'Pantry', keywords: ['pantry', 'rice', 'dal', 'oil', 'staples', 'masala'], icon: 'pantry' },
+  { label: 'Meat & Fish', keywords: ['meat', 'fish', 'seafood', 'chicken'], icon: 'meat' },
+  { label: 'Frozen', keywords: ['frozen', 'ice cream'], icon: 'frozen' },
+  { label: 'Home', keywords: ['home', 'cleaning', 'household'], icon: 'household' },
   { label: 'Baby Food', keywords: ['baby', 'kids', 'infant'], icon: 'baby' },
   { label: 'Personal Care', keywords: ['care', 'beauty', 'personal', 'hygiene'], icon: 'care' },
 ]

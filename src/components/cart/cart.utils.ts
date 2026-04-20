@@ -1,4 +1,4 @@
-import { discountPercent } from '@/lib/utils'
+﻿import { discountPercent, formatINR } from '@/lib/utils'
 import type { CartItem } from '@/types/cart.types'
 
 export function cartItemOriginalPrice(item: CartItem) {
@@ -31,4 +31,30 @@ export function cartItemStockLabel(item: CartItem) {
     if (!item.inStock) return 'Out of stock'
     if (cartItemIsLowStock(item)) return `Only ${item.stockQuantity} left!`
     return 'In stock'
+}
+
+export function cartItemUnitPriceLabel(item: CartItem) {
+    const unit = item.unit?.trim().toLowerCase()
+    if (!unit) return null
+
+    const formatted = formatINR(item.price)
+
+    switch (unit) {
+        case 'kg':
+            return `${formatted}/kg`
+        case 'g':
+            return `${formatted}/500g`
+        case 'l':
+            return `${formatted}/L`
+        case 'ml':
+            return `${formatted}/500ml`
+        case 'piece':
+        case 'pc':
+        case 'pcs':
+            return `${formatted}/piece`
+        case 'pack':
+            return `${formatted}/pack`
+        default:
+            return null
+    }
 }

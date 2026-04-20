@@ -10,10 +10,10 @@ import { cn } from '@/lib/utils'
 import type { Banner } from '@/types/banner.types'
 
 const FALLBACK_GRADIENTS = [
-    'linear-gradient(135deg, #285F4A 0%, #16372B 100%)',
-    'linear-gradient(135deg, #6B1F35 0%, #982A46 100%)',
-    'linear-gradient(135deg, #244C7A 0%, #172C4A 100%)',
-    'linear-gradient(135deg, #7C571C 0%, #A16E1B 100%)',
+    'linear-gradient(135deg, color-mix(in srgb, var(--shop-action) 54%, var(--shop-ink) 46%) 0%, color-mix(in srgb, var(--shop-ink) 84%, black 16%) 100%)',
+    'linear-gradient(135deg, color-mix(in srgb, var(--shop-primary) 60%, var(--shop-danger) 40%) 0%, color-mix(in srgb, var(--shop-primary) 48%, var(--shop-ink) 52%) 100%)',
+    'linear-gradient(135deg, color-mix(in srgb, var(--shop-trust) 58%, var(--shop-ink) 42%) 0%, color-mix(in srgb, var(--shop-ink) 86%, white 14%) 100%)',
+    'linear-gradient(135deg, color-mix(in srgb, var(--shop-accent) 54%, var(--shop-primary) 46%) 0%, color-mix(in srgb, var(--shop-accent) 42%, var(--shop-ink) 58%) 100%)',
 ]
 
 const EYEBROWS = ['Curated Fresh', 'Limited Run', 'Daily Highlight', 'Editor Pick']
@@ -143,7 +143,7 @@ export function BannerCarousel({ banners }: { banners: Banner[] }) {
                                                             </p>
                                                         )}
                                                     </div>
-                                                    <span className="inline-flex h-11 items-center justify-center rounded-full bg-white px-4 text-sm font-semibold text-[#111827] shadow-[0_12px_20px_rgba(0,0,0,0.18)]">
+                                                    <span className="inline-flex h-11 items-center justify-center rounded-full bg-white px-4 text-sm font-semibold text-[color:var(--shop-ink)] shadow-[0_12px_20px_rgba(0,0,0,0.18)]">
                                                         Explore
                                                     </span>
                                                 </div>
@@ -182,8 +182,8 @@ export function BannerCarousel({ banners }: { banners: Banner[] }) {
                                 className={cn(
                                     'transition-all duration-300',
                                     selectedIndex === index
-                                        ? 'h-2.5 w-8 rounded-full bg-[#22C55E]'
-                                        : 'h-2.5 w-2.5 rounded-full bg-[#C7CDD4] hover:bg-[#A7AFB8]',
+                                        ? 'h-2.5 w-8 rounded-full bg-[color:var(--shop-action)]'
+                                        : 'h-2.5 w-2.5 rounded-full bg-[color:var(--shop-border)] hover:bg-[color:var(--shop-ink-faint)]',
                                 )}
                                 aria-label={`Go to banner ${index + 1}`}
                             />
@@ -194,7 +194,7 @@ export function BannerCarousel({ banners }: { banners: Banner[] }) {
                         <button
                             type="button"
                             onClick={() => emblaApi?.scrollPrev()}
-                            className="flex h-11 w-11 items-center justify-center rounded-full border border-white/80 bg-white/78 text-[#616A74] shadow-[0_8px_18px_rgba(15,23,42,0.06)] transition-all duration-200 hover:-translate-x-0.5 hover:border-[#D5E9DB] hover:bg-[#F5FBF7] hover:text-[#16A34A]"
+                            className="flex h-11 w-11 items-center justify-center rounded-full border border-white/80 bg-white/78 text-[color:var(--shop-ink-muted)] shadow-[0_8px_18px_rgba(15,23,42,0.06)] transition-all duration-200 hover:-translate-x-0.5 hover:border-[color:var(--shop-primary-soft)] hover:bg-[color:var(--shop-surface-subtle)] hover:text-[color:var(--shop-action)]"
                             aria-label="Previous banner"
                         >
                             <ChevronLeft className="h-5 w-5" strokeWidth={1.8} />
@@ -202,7 +202,7 @@ export function BannerCarousel({ banners }: { banners: Banner[] }) {
                         <button
                             type="button"
                             onClick={() => emblaApi?.scrollNext()}
-                            className="flex h-11 w-11 items-center justify-center rounded-full border border-white/80 bg-white/78 text-[#616A74] shadow-[0_8px_18px_rgba(15,23,42,0.06)] transition-all duration-200 hover:translate-x-0.5 hover:border-[#D5E9DB] hover:bg-[#F5FBF7] hover:text-[#16A34A]"
+                            className="flex h-11 w-11 items-center justify-center rounded-full border border-white/80 bg-white/78 text-[color:var(--shop-ink-muted)] shadow-[0_8px_18px_rgba(15,23,42,0.06)] transition-all duration-200 hover:translate-x-0.5 hover:border-[color:var(--shop-primary-soft)] hover:bg-[color:var(--shop-surface-subtle)] hover:text-[color:var(--shop-action)]"
                             aria-label="Next banner"
                         >
                             <ChevronRight className="h-5 w-5" strokeWidth={1.8} />
